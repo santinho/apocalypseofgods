@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Apocalypse Of Gods</title>
+  <style>
+    :root {
+      --btn-bg: rgba(0, 0, 0, 0.65);
+      --btn-border: rgba(255, 255, 255, 0.75);
+      --btn-text: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      min-height: 100%;
+      overflow: hidden;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      background: #000;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+    }
+
+    .app-frame {
+      position: relative;
+      width: min(100vw, calc(100dvh * 9 / 16));
+      height: min(100dvh, calc(100vw * 16 / 9));
+      aspect-ratio: 9 / 16;
+      background: #000;
+      overflow: hidden;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 24px;
+      transition: opacity 260ms ease;
+      background: #000;
+    }
+
+    .screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .scene-image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+      transform: scale(var(--zoom, 1));
+      transform-origin: center;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    #adventure-screen {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #adventure-screen.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .adventure-actions {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      padding-bottom: 4px;
+    }
+
+    .start-btn {
+      width: min(90vw, 360px);
+      border: 2px solid var(--btn-border);
+      border-radius: 14px;
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      padding: 16px 20px;
+      font-size: clamp(1.1rem, 4.4vw, 1.35rem);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .start-btn:active {
+      transform: scale(0.98);
+    }
+
+    .map-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.92);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 10;
+    }
+
+    .map-overlay.visible {
+      display: flex;
+    }
+
+    .map-image {
+      --zoom: 1;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      border-radius: 10px;
+      transform: scale(var(--zoom, 1));
+      transform-origin: center;
+    }
+
+    .close-map-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: auto;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="app-frame">
+    <section id="start-screen" class="screen">
+      <img id="start-image" class="scene-image" src="./AOG.jpg" alt="">
+      <button id="start-button" class="start-btn" type="button">Iniciar</button>
+    </section>
+
+    <section id="adventure-screen" class="screen" aria-hidden="true">
+      <img id="adventure-image" class="scene-image" src="./Aventura01.png" alt="">
+      <div class="adventure-actions">
+        <button id="map-button" class="start-btn" type="button">Ver mapa</button>
+      </div>
+    </section>
+
+    <div id="map-overlay" class="map-overlay" aria-hidden="true">
+      <button id="close-map-button" class="start-btn close-map-btn" type="button">Fechar</button>
+      <img class="map-image" src="./mapa01.jpg" alt="Mapa da aventura">
+    </div>
+  </main>
+
+  <audio id="adventure-audio" src="./Aventura1.mp3" preload="auto"></audio>
+
+  <script>
+    const startButton = document.getElementById("start-button");
+    const mapButton = document.getElementById("map-button");
+    const closeMapButton = document.getElementById("close-map-button");
+    const appFrame = document.querySelector(".app-frame");
+    const startImage = document.getElementById("start-image");
+    const adventureImage = document.getElementById("adventure-image");
+    const mapImage = document.querySelector(".map-image");
+    const startScreen = document.getElementById("start-screen");
+    const adventureScreen = document.getElementById("adventure-screen");
+    const mapOverlay = document.getElementById("map-overlay");
+    const adventureAudio = document.getElementById("adventure-audio");
+    const zoomByElement = new Map([
+      [startImage, 1],
+      [adventureImage, 1],
+      [mapImage, 1]
+    ]);
+
+    function applyZoom(element, value) {
+      const clamped = Math.min(4, Math.max(1, value));
+      zoomByElement.set(element, clamped);
+      element.style.setProperty("--zoom", clamped.toFixed(2));
+    }
+
+    function getActiveZoomElement() {
+      if (mapOverlay.classList.contains("visible")) return mapImage;
+      if (adventureScreen.classList.contains("visible")) return adventureImage;
+      return startImage;
+    }
+
+    function startAdventure() {
+      startScreen.classList.add("hidden");
+      adventureScreen.classList.add("visible");
+      adventureScreen.setAttribute("aria-hidden", "false");
+
+      const playPromise = adventureAudio.play();
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch((error) => {
+          console.error("Nao foi possivel reproduzir o audio:", error);
+        });
+      }
+    }
+
+    startButton.addEventListener("click", startAdventure, { once: true });
+    mapButton.addEventListener("click", () => {
+      mapOverlay.classList.add("visible");
+      mapOverlay.setAttribute("aria-hidden", "false");
+    });
+    closeMapButton.addEventListener("click", () => {
+      mapOverlay.classList.remove("visible");
+      mapOverlay.setAttribute("aria-hidden", "true");
+    });
+
+    appFrame.addEventListener("wheel", (event) => {
+      event.preventDefault();
+      const element = getActiveZoomElement();
+      const currentZoom = zoomByElement.get(element) || 1;
+      const delta = event.deltaY < 0 ? 0.12 : -0.12;
+      applyZoom(element, currentZoom + delta);
+    }, { passive: false });
+  </script>
+</body>
+</html>
