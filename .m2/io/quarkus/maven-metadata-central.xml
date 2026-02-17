@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <plugins>
+    <plugin>
+      <name>Quarkus - Bootstrap - Maven plugin</name>
+      <prefix>quarkus-bootstrap</prefix>
+      <artifactId>quarkus-bootstrap-maven-plugin</artifactId>
+    </plugin>
+    <plugin>
+      <name>Quarkus - Config doc Maven plugin</name>
+      <prefix>quarkus-config-doc</prefix>
+      <artifactId>quarkus-config-doc-maven-plugin</artifactId>
+    </plugin>
+    <plugin>
+      <name>Quarkus - Extension Maven plugin</name>
+      <prefix>quarkus-extension</prefix>
+      <artifactId>quarkus-extension-maven-plugin</artifactId>
+    </plugin>
+    <plugin>
+      <name>Quarkus - Extension Maven plugin</name>
+      <prefix>quarkus-extension-plugin</prefix>
+      <artifactId>quarkus-extension-plugin</artifactId>
+    </plugin>
+    <plugin>
+      <name>Quarkus - Maven Plugin</name>
+      <prefix>quarkus</prefix>
+      <artifactId>quarkus-maven-plugin</artifactId>
+    </plugin>
+    <plugin>
+      <name>Quarkus - Platform BOM Tools - Maven plugin</name>
+      <prefix>quarkus-platform-bom</prefix>
+      <artifactId>quarkus-platform-bom-maven-plugin</artifactId>
+    </plugin>
+    <plugin>
+      <name>Quarkus - Dev tools - Platform Descriptor - JSON Maven Plugin</name>
+      <prefix>quarkus-platform-descriptor-json-plugin</prefix>
+      <artifactId>quarkus-platform-descriptor-json-plugin</artifactId>
+    </plugin>
+  </plugins>
+</metadata>

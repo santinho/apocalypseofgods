@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenBoardGame - Adventure Builder Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600;800&family=Crimson+Pro:ital,wght@0,400;0,700;1,400&display=swap');
+        
+        :root {
+            --gold: #D4AF37;
+            --gold-bright: #FDE68A;
+            --bg-dark: #020617;
+            --card-gradient: linear-gradient(135deg, rgba(30, 30, 45, 0.7) 0%, rgba(15, 15, 25, 0.9) 100%);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        .font-display { font-family: 'Cinzel', serif; }
+        .font-narrative { font-family: 'Crimson Pro', serif; }
+
+        /* Efeitos Visuais Épicos */
+        .text-gold { color: var(--gold); }
+        .bg-gold { background-color: var(--gold); }
+        .border-ornate { border: 1px solid rgba(212, 175, 55, 0.3); }
+        
+        .hero-overlay {
+            background: linear-gradient(to top, var(--bg-dark) 0%, rgba(2, 6, 23, 0.4) 100%);
+        }
+
+        .glow-gold:hover {
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
+            border-color: var(--gold);
+        }
+
+        @keyframes glow-pulse {
+            0%, 100% { filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.5)); }
+            50% { filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.8)); }
+        }
+        .animate-glow-pulse { animation: glow-pulse 3s infinite; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-float { animation: float 4s ease-in-out infinite; }
+
+        /* Sliders */
+        input[type=range] {
+            height: 4px;
+            -webkit-appearance: none;
+            background: rgba(212, 175, 55, 0.1);
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: var(--gold);
+            cursor: pointer;
+            border: 2px solid white;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .hex-grid-svg { cursor: crosshair; }
+
+        .block-card {
+            background: var(--card-gradient);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .block-card.active {
+            border-color: var(--gold);
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.1);
+        }
+
+        /* Modo Maximizado */
+        .maximized-element {
+            position: fixed !important; top: 0 !important; left: 0 !important;
+            width: 100vw !important; height: 100vh !important;
+            z-index: 9999 !important; background: #000 !important;
+            border: none !important; border-radius: 0 !important; margin: 0 !important;
+        }
+        .maximized-element .edit-ui, .maximized-element .insert-bar { display: none !important; }
+        .maximized-element .content-container { 
+            height: 100vh !important; display: flex; align-items: center; justify-content: center; padding: 0 !important;
+        }
+
+        .hud-glass {
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+        }
+        
+        #notification {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: #111; border: 1px solid var(--gold); padding: 12px 24px;
+            border-radius: 50px; z-index: 10000; display: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <div id="notification"></div>
+
+    <!-- NAVBAR -->
+    <header id="main-header" class="sticky top-0 z-50 w-full border-b border-white/5 bg-background/80 backdrop-blur-md">
+        <div class="container mx-auto flex h-14 items-center justify-between px-6">
+            <a class="flex items-center gap-2 group cursor-pointer" onclick="showView('home')">
+                <i data-lucide="shield" class="w-6 h-6 text-gold animate-glow-pulse"></i>
+                <span class="font-display text-lg tracking-wider text-gold">OpenBoardGame</span>
+            </a>
+            <div id="nav-actions" class="hidden flex items-center gap-4">
+                <button onclick="exportAdventure()" class="text-xs font-display text-gold border border-gold/30 px-4 py-1.5 rounded-md hover:bg-gold/10 transition-all uppercase tracking-widest">
+                    Exportar Crónica
+                </button>
+                <button onclick="showView('home')" class="text-zinc-500 hover:text-gold transition-colors">
+                    <i data-lucide="scroll" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main id="app-container">
+        
+        <!-- HOME SECTION / HERO COM IMAGEM DO CASTELO -->
+        <section id="view-home" class="fade-in">
+            <div class="relative h-[55vh] min-h-[450px] flex items-end overflow-hidden">
+                <!-- Imagem do Castelo ao Fundo -->
+                <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1514539079130-25950c84af65?auto=format&fit=crop&q=80&w=2000')] bg-cover bg-center opacity-50 scale-105"></div>
+                <div class="absolute inset-0 hero-overlay"></div>
+                
+                <div class="relative container mx-auto px-10 pb-12 space-y-4">
+                    <div class="flex items-center gap-2 text-gold animate-float">
+                        <i data-lucide="sparkles" class="w-5 h-5"></i>
+                        <span class="font-display text-sm tracking-[0.3em] uppercase">Adventure Builder Pro</span>
+                    </div>
+                    <h1 class="font-display text-5xl md:text-7xl text-gold tracking-wide leading-none uppercase italic">Epic Quest<br><span class="text-zinc-100 not-italic">Maker</span></h1>
+                    <p class="text-zinc-300 max-w-xl text-lg leading-relaxed font-light drop-shadow-lg">
+                        Prepare as suas crónicas. Organize mapas táticos, ilustrações imersivas e trilhas sonoras orquestradas para a sua mesa de jogo.
+                    </p>
+                    
+                    <div class="flex items-center gap-4 pt-4">
+                        <button onclick="createNewAdventure()" class="inline-flex items-center justify-center rounded-md bg-gold text-black hover:bg-gold-bright px-10 py-4 font-display text-sm tracking-widest transition-all shadow-lg shadow-gold/20 active:scale-95">
+                            NOVA JORNADA
+                        </button>
+                        <label class="inline-flex items-center justify-center rounded-md border border-white/10 bg-white/5 text-zinc-300 hover:text-gold hover:border-gold/50 px-10 py-4 font-display text-sm tracking-widest transition-all cursor-pointer backdrop-blur-md">
+                            CARREGAR .JSON
+                            <input type="file" id="json-load-input" class="hidden" accept=".json">
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container mx-auto px-10 py-16">
+                <div class="flex items-center gap-3 mb-10">
+                    <i data-lucide="sword" class="w-5 h-5 text-gold"></i>
+                    <h2 class="font-display text-xl text-gold uppercase tracking-[0.2em]">Sua Biblioteca de Aventuras</h2>
+                </div>
+                <div id="adventures-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Cards de aventuras injetados aqui -->
+                </div>
+            </div>
+        </section>
+
+        <!-- EDITOR SECTION -->
+        <section id="view-editor" class="hidden container mx-auto px-10 py-12 fade-in pb-32">
+            <div class="flex flex-col gap-2 mb-12">
+                <input type="text" id="adventure-title" placeholder="Nome da Aventura..." 
+                    class="bg-transparent border-none font-display font-black text-5xl md:text-6xl focus:ring-0 text-gold w-full outline-none placeholder:text-white/10 transition-all">
+                <div class="h-1 w-24 bg-gold rounded-full"></div>
+            </div>
+
+            <div id="editor-blocks" class="flex flex-col gap-8"></div>
+
+            <!-- PAINÉIS HUD DO EDITOR -->
+            <div id="contextual-panels" class="fixed bottom-8 right-8 z-[60] hidden flex flex-col gap-4 w-72">
+                <!-- Tokens -->
+                <div class="hud-glass p-6 rounded-[2rem]">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-display text-[10px] font-bold text-gold uppercase tracking-widest">Tokens</h3>
+                        <div id="active-token-icon" class="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center overflow-hidden border border-white/10 shadow-inner">
+                             <i data-lucide="user" class="w-4 h-4 text-zinc-700"></i>
+                        </div>
+                    </div>
+                    <div id="color-palette" class="grid grid-cols-5 gap-2 mb-4"></div>
+                    <label class="flex items-center justify-center gap-2 bg-white/5 hover:bg-gold/20 p-2 rounded-lg cursor-pointer transition-all text-[9px] font-bold uppercase tracking-widest border border-white/5">
+                        <i data-lucide="image" class="w-3 h-3"></i> Mudar Ícone
+                        <input type="file" id="token-file-input" class="hidden" accept="image/*">
+                    </label>
+                </div>
+
+                <!-- Grid -->
+                <div class="hud-glass p-6 rounded-[2rem]">
+                    <h3 class="font-display text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-4">Alinhamento Grid</h3>
+                    <div class="space-y-4">
+                        <input type="range" id="input-scale" min="10" max="100" value="30" class="w-full accent-gold">
+                        <div class="flex gap-2">
+                            <input type="range" id="input-ox" min="-500" max="500" value="0" class="w-full">
+                            <input type="range" id="input-oy" min="-500" max="500" value="0" class="w-full">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- TEMPLATE DE INSERÇÃO -->
+    <template id="insert-bar-template">
+        <div class="group flex flex-col items-center py-6 insert-bar">
+            <div class="w-px h-8 bg-gradient-to-b from-transparent via-white/10 to-transparent"></div>
+            <div class="relative">
+                <button class="add-btn flex items-center gap-3 bg-zinc-900 border border-white/10 hover:border-gold/50 text-zinc-500 hover:text-gold px-6 py-2.5 rounded-full transition-all text-[10px] font-display font-bold uppercase tracking-[0.2em] shadow-2xl active:scale-95">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Adicionar Elemento
+                </button>
+                <div class="menu-popup hidden absolute left-1/2 -translate-x-1/2 top-full mt-4 bg-zinc-950/95 backdrop-blur-2xl border border-gold/20 rounded-[2rem] p-3 shadow-2xl z-[100] flex flex-col w-56 ring-1 ring-gold/10">
+                    <button data-type="map" class="flex items-center gap-4 p-4 hover:bg-white/5 rounded-2xl text-xs font-bold transition-all text-zinc-400 hover:text-gold">
+                        <i data-lucide="map" class="w-5 h-5 text-gold"></i> Mapa de Batalha
+                    </button>
+                    <button data-type="image" class="flex items-center gap-4 p-4 hover:bg-white/5 rounded-2xl text-xs font-bold transition-all text-zinc-400 hover:text-orange-500">
+                        <i data-lucide="image" class="w-5 h-5"></i> Ilustração / Visual
+                    </button>
+                    <button data-type="text" class="flex items-center gap-4 p-4 hover:bg-white/5 rounded-2xl text-xs font-bold transition-all text-zinc-400 hover:text-purple-500">
+                        <i data-lucide="scroll" class="w-5 h-5"></i> Texto Narrativo
+                    </button>
+                    <button data-type="audio" class="flex items-center gap-4 p-4 hover:bg-white/5 rounded-2xl text-xs font-bold transition-all text-zinc-400 hover:text-green-500">
+                        <i data-lucide="music" class="w-5 h-5"></i> Som Ambiente
+                    </button>
+                </div>
+            </div>
+            <div class="w-px h-8 bg-gradient-to-t from-transparent via-white/10 to-transparent"></div>
+        </div>
+    </template>
+
+    <script>
+        let state = {
+            view: 'home',
+            elements: [], 
+            selectedElementId: null,
+            selectedColor: '#3b82f6',
+            tokenIcon: null,
+            maximizedId: null,
+            presentationView: { zoom: 1, x: 0, y: 0 }
+        };
+
+        const COLORS = [
+            { name: 'H', value: '#3b82f6' }, { name: 'I', value: '#ef4444' },
+            { name: 'E', value: '#a855f7' }, { name: 'B', value: '#f97316' },
+            { name: 'T', value: '#eab308' }, { name: 'N', value: '#22c55e' },
+            { name: 'P', value: '#64748b' }, { name: 'A', value: '#06b6d4' },
+            { name: 'X', value: '#fbbf24' }, { name: 'V', value: '#18181b' }
+        ];
+
+        const SQRT_3 = Math.sqrt(3);
+
+        window.onload = () => {
+            initPalette();
+            initGlobalEvents();
+            renderHomeGrid();
+            lucide.createIcons();
+        };
+
+        function initPalette() {
+            const container = document.getElementById('color-palette');
+            if(!container) return;
+            COLORS.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = `w-full aspect-square rounded-lg transition-all border-2 border-transparent hover:scale-110`;
+                btn.style.backgroundColor = c.value;
+                btn.onclick = () => {
+                    state.selectedColor = c.value;
+                    document.querySelectorAll('#color-palette button').forEach(b => b.classList.remove('border-white'));
+                    btn.classList.add('border-white');
+                };
+                container.appendChild(btn);
+            });
+            if(container.children.length > 0) container.children[0].classList.add('border-white');
+        }
+
+        function initGlobalEvents() {
+            const tokenInput = document.getElementById('token-file-input');
+            if(tokenInput) {
+                tokenInput.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (f) => {
+                            state.tokenIcon = f.target.result;
+                            const ic = document.getElementById('active-token-icon');
+                            if(ic) ic.innerHTML = `<img src="${state.tokenIcon}" class="w-full h-full object-cover">`;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+            }
+
+            const updateActiveMap = () => {
+                if (!state.selectedElementId || state.maximizedId) return;
+                const el = state.elements.find(e => e.id === state.selectedElementId);
+                if (el && el.type === 'map') {
+                    const sIn = document.getElementById('input-scale');
+                    const oxIn = document.getElementById('input-ox');
+                    const oyIn = document.getElementById('input-oy');
+                    if(sIn) el.data.gridSettings.scale = parseInt(sIn.value);
+                    if(oxIn) el.data.gridSettings.ox = parseInt(oxIn.value);
+                    if(oyIn) el.data.gridSettings.oy = parseInt(oyIn.value);
+                    renderElement(el.id);
+                }
+            };
+
+            const isInput = (id) => document.getElementById(id);
+            if (isInput('input-scale')) isInput('input-scale').oninput = updateActiveMap;
+            if (isInput('input-ox')) isInput('input-ox').oninput = updateActiveMap;
+            if (isInput('input-oy')) isInput('input-oy').oninput = updateActiveMap;
+
+            const jsonInput = document.getElementById('json-load-input');
+            if(jsonInput) {
+                jsonInput.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (f) => importAdventure(JSON.parse(f.target.result));
+                        reader.readAsText(file);
+                    }
+                };
+            }
+
+            window.onclick = (e) => {
+                if (!e.target.closest('.relative')) {
+                    document.querySelectorAll('.menu-popup').forEach(m => m.classList.add('hidden'));
+                }
+            };
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && state.maximizedId) {
+                    toggleMaximize(state.maximizedId);
+                }
+            });
+        }
+
+        function showView(viewName) {
+            state.view = viewName;
+            document.getElementById('view-home').classList.toggle('hidden', viewName !== 'home');
+            document.getElementById('view-editor').classList.toggle('hidden', viewName !== 'editor');
+            document.getElementById('nav-actions').classList.toggle('hidden', viewName === 'home');
+            if (viewName === 'home') renderHomeGrid();
+        }
+
+        function createNewAdventure() {
+            state.elements = [];
+            state.adventureTitle = '';
+            document.getElementById('adventure-title').value = '';
+            renderEditor();
+            showView('editor');
+        }
+
+        function renderEditor() {
+            const container = document.getElementById('editor-blocks');
+            if(!container) return;
+            container.innerHTML = '';
+            if (!state.maximizedId) container.appendChild(createInsertBar(0));
+            state.elements.forEach((el, index) => {
+                container.appendChild(createBlockElement(el));
+                if (!state.maximizedId) container.appendChild(createInsertBar(index + 1));
+            });
+            lucide.createIcons();
+            updateContextualPanels();
+        }
+
+        function createInsertBar(index) {
+            const template = document.getElementById('insert-bar-template');
+            const clone = template.content.cloneNode(true);
+            const btn = clone.querySelector('.add-btn');
+            const menu = clone.querySelector('.menu-popup');
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.menu-popup').forEach(m => m !== menu && m.classList.add('hidden'));
+                menu.classList.toggle('hidden');
+            };
+            menu.querySelectorAll('button').forEach(opt => {
+                opt.onclick = () => { addElement(opt.dataset.type, index); menu.classList.add('hidden'); };
+            });
+            return clone;
+        }
+
+        function addElement(type, index) {
+            const id = 'el-' + Date.now();
+            const newEl = {
+                id, type, data: { url: null, audioUrl: null, title: type === 'map' ? 'Novo Mapa' : (type === 'audio' ? 'Ambiente' : (type === 'text' ? 'Crónica' : 'Cena Visual')), scale: type === 'text' ? 1 : 100, panX: 0, panY: 0, content: '', tokens: [], gridSettings: { scale: 30, ox: 0, oy: 0, color: '#ffffff', opacity: 0.15 } }
+            };
+            state.elements.splice(index, 0, newEl);
+            state.selectedElementId = id;
+            renderEditor();
+        }
+
+        function createBlockElement(el) {
+            const div = document.createElement('div');
+            div.id = `block-${el.id}`;
+            const isMax = state.maximizedId === el.id;
+            const isAct = state.selectedElementId === el.id && !isMax;
+            div.className = `block-card rounded-[2.5rem] shadow-2xl ${isAct ? 'active' : ''} ${isMax ? 'maximized-element' : 'mb-2'}`;
+            
+            div.onclick = (e) => {
+                if (state.maximizedId || e.target.closest('button') || e.target.closest('input') || e.target.closest('textarea')) return;
+                state.selectedElementId = el.id;
+                renderEditor();
+            };
+
+            const contentHtml = el.type === 'map' ? renderMapBlock(el, isMax) : el.type === 'image' ? renderImageBlock(el, isMax) : el.type === 'text' ? renderTextBlock(el, isMax) : renderAudioBlock(el);
+
+            div.innerHTML = `
+                <div class="edit-ui flex items-center justify-between p-6 bg-white/5 border-b border-white/5 rounded-t-[2rem]">
+                    <div class="flex items-center gap-4">
+                        <div class="p-3 bg-zinc-900 rounded-xl shadow-inner border border-gold/20">
+                            <i data-lucide="${el.type === 'map' ? 'map' : (el.type === 'audio' ? 'music' : (el.type === 'text' ? 'scroll' : 'image'))}" class="w-4 h-4 text-gold"></i>
+                        </div>
+                        <input type="text" value="${el.data.title}" onchange="updateElData('${el.id}', 'title', this.value)" 
+                            class="bg-transparent border-none font-display text-xs font-bold uppercase tracking-[0.2em] outline-none text-gold focus:text-zinc-100 transition-colors w-48">
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="toggleMaximize('${el.id}')" class="w-10 h-10 flex items-center justify-center bg-zinc-900 hover:bg-gold/10 text-gold transition-all border border-gold/20 rounded-full" title="Maximizar">
+                            <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="removeElement('${el.id}')" class="w-10 h-10 flex items-center justify-center bg-zinc-900 hover:bg-red-950/40 text-zinc-500 hover:text-red-500 rounded-full transition-all border border-white/5">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="content-container p-6 relative flex flex-col items-center">
+                    ${contentHtml}
+                    ${isMax ? `<button onclick="toggleMaximize('${el.id}')" class="fixed top-8 right-8 z-[10005] bg-black/40 hover:bg-gold/30 backdrop-blur-md text-white p-5 rounded-full transition-all border border-gold/30 shadow-2xl active:scale-95"><i data-lucide="x" class="w-6 h-6"></i></button>` : ''}
+                    ${isMax ? renderPresentationHUD(el) : ''}
+                </div>
+                ${(el.type === 'map' || el.type === 'image' || el.type === 'text') ? renderAudioFooter(el, isMax) : ''}
+            `;
+            return div;
+        }
+
+        function renderPresentationHUD(el) {
+            return `
+                <div class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[10010] hud-glass px-10 py-6 rounded-[3rem] flex items-center gap-10 animate-in slide-in-from-bottom-10">
+                    <div class="flex flex-col gap-2 w-48">
+                        <div class="flex justify-between text-[8px] font-black text-gold uppercase tracking-widest"><span>Zoom Câmera</span><span id="hud-val-zoom">${Math.round(state.presentationView.zoom * 100)}%</span></div>
+                        <input type="range" min="0.1" max="5" step="0.01" value="${state.presentationView.zoom}" oninput="updatePresentationView('${el.id}', 'zoom', this.value)" class="accent-gold">
+                    </div>
+                    <div class="flex flex-col gap-2 w-40">
+                        <div class="flex justify-between text-[8px] font-black text-zinc-500 uppercase tracking-widest"><span>Posição X / Y</span></div>
+                        <div class="flex gap-4">
+                            <input type="range" min="-2000" max="2000" value="${state.presentationView.x}" oninput="updatePresentationView('${el.id}', 'x', this.value)" class="accent-zinc-700">
+                            <input type="range" min="-2000" max="2000" value="${state.presentationView.y}" oninput="updatePresentationView('${el.id}', 'y', this.value)" class="accent-zinc-700">
+                        </div>
+                    </div>
+                    <button onclick="resetPresentationView('${el.id}')" class="w-10 h-10 flex items-center justify-center hover:bg-white/5 rounded-full text-zinc-500 hover:text-gold transition-all"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>
+                </div>
+            `;
+        }
+
+        function updatePresentationView(id, prop, val) {
+            state.presentationView[prop] = parseFloat(val);
+            const zoomLabel = document.getElementById('hud-val-zoom');
+            if (prop === 'zoom' && zoomLabel) zoomLabel.innerText = Math.round(val * 100) + '%';
+            const wrapper = document.getElementById(`wrapper-${id}`);
+            if (wrapper) wrapper.style.transform = `translate(${state.presentationView.x}px, ${state.presentationView.y}px) scale(${state.presentationView.zoom})`;
+        }
+
+        function resetPresentationView(id) {
+            state.presentationView = { zoom: 1, x: 0, y: 0 };
+            renderEditor();
+            const el = state.elements.find(e => e.id === id);
+            if(el && el.type === 'map') setTimeout(() => renderElement(id), 50);
+        }
+
+        function renderAudioFooter(el, isMax) {
+            return `
+                <div class="edit-ui px-6 pb-10 pt-2">
+                    <div class="bg-zinc-950/50 rounded-[2rem] p-5 border border-white/5 flex items-center gap-8 shadow-inner">
+                        <div class="flex items-center gap-3 text-[10px] font-display font-black text-gold uppercase tracking-[0.2em] min-w-[140px]">
+                            <i data-lucide="music" class="w-4 h-4"></i> Trilha Sonora
+                        </div>
+                        <div class="flex-1">
+                            ${el.data.audioUrl ? `<audio controls class="w-full h-8 opacity-60"><source src="${el.data.audioUrl}"></audio>` : ''}
+                        </div>
+                        <label class="bg-zinc-900 hover:bg-gold/10 w-12 h-12 flex items-center justify-center rounded-2xl cursor-pointer transition-all border border-gold/20">
+                            <i data-lucide="plus" class="w-5 h-5 text-gold"></i>
+                            <input type="file" class="hidden" accept="audio/*" onchange="uploadAudioToElement('${el.id}', this)">
+                        </label>
+                        ${el.data.audioUrl ? `<button onclick="updateElData('${el.id}', 'audioUrl', null); renderEditor();" class="text-zinc-600 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-5 h-5"></i></button>` : ''}
+                    </div>
+                </div>
+                ${isMax && el.data.audioUrl ? `<div class="fixed bottom-40 right-10 z-[10006] w-64 animate-in fade-in zoom-in duration-700 backdrop-blur-md bg-black/40 p-4 rounded-3xl border border-gold/20 shadow-2xl"><audio controls class="w-full h-10 opacity-60 hover:opacity-100 transition-opacity"><source src="${el.data.audioUrl}"></audio></div>` : ''}
+            `;
+        }
+
+        function renderMapBlock(el, isMax) {
+            if (!el.data.url) return `<div class="py-24 flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-[2.5rem] w-full bg-white/5"><label class="bg-gold text-black px-10 py-5 rounded-full cursor-pointer text-[10px] font-display font-black uppercase tracking-widest active:scale-95 shadow-xl hover:bg-gold-bright transition-all">Desbravar Mapa<input type="file" class="hidden" accept="image/*" onchange="uploadToElement('${el.id}', this)"></label></div>`;
+            const transform = isMax ? `transform: translate(${state.presentationView.x}px, ${state.presentationView.y}px) scale(${state.presentationView.zoom})` : ``;
+            return `<div class="relative bg-black rounded-[2.5rem] overflow-hidden w-full ring-1 ring-white/10 h-[650px] flex items-center justify-center shadow-inner"><div class="map-viewport relative h-full w-full scrollbar-hide flex justify-center items-start" id="viewport-${el.id}"><div class="relative inline-block transition-transform duration-75" id="wrapper-${el.id}" style="${transform}"><img src="${el.data.url}" class="block max-w-none opacity-80 select-none pointer-events-none" id="img-${el.id}"><svg class="absolute inset-0 w-full h-full hex-grid-svg" id="svg-${el.id}" onclick="handleMapClick(event, '${el.id}')"></svg></div></div></div>`;
+        }
+
+        function renderImageBlock(el, isMax) {
+            if (!el.data.url) return `<div class="py-24 flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-[2.5rem] w-full bg-white/5"><label class="bg-gold text-black px-10 py-5 rounded-full cursor-pointer text-[10px] font-display font-black uppercase tracking-widest active:scale-95 shadow-xl hover:bg-gold-bright transition-all">Subir Ilustração Épica<input type="file" class="hidden" accept="image/*" onchange="uploadToElement('${el.id}', this)"></label></div>`;
+            const transform = isMax ? `transform: translate(${state.presentationView.x}px, ${state.presentationView.y}px) scale(${state.presentationView.zoom})` : `transform: translate(${el.data.panX}px, ${el.data.panY}px)`;
+            return `<div class="w-full flex flex-col items-center justify-center min-h-[500px]"><div class="edit-ui flex items-center gap-6 w-full max-w-md bg-zinc-900/50 backdrop-blur-md p-5 rounded-3xl border border-white/10 mb-10 shadow-2xl"><i data-lucide="expand" class="w-4 h-4 text-gold"></i><input type="range" min="5" max="100" value="${el.data.scale || 100}" oninput="updateImageScale('${el.id}', this.value)" class="flex-1 accent-gold"></div><div class="overflow-hidden flex items-center justify-center w-full h-full"><img src="${el.data.url}" id="wrapper-${el.id}" class="rounded-[2.5rem] shadow-2xl border border-white/5 transition-all duration-75" style="width: ${el.data.scale || 100}%; max-width: none; ${transform}"></div></div>`;
+        }
+
+        function renderTextBlock(el, isMax) {
+            if (isMax) {
+                const tr = `transform: translate(${state.presentationView.x}px, ${state.presentationView.y}px) scale(${state.presentationView.zoom})`;
+                return `<div id="wrapper-${el.id}" class="max-w-4xl px-20 text-center font-narrative transition-transform duration-75" style="${tr}"><p class="text-4xl md:text-6xl font-medium text-zinc-100 leading-relaxed italic whitespace-pre-wrap drop-shadow-2xl">${el.data.content || 'Aguardando sua narrativa...'}</p></div>`;
+            }
+            return `<div class="w-full"><textarea oninput="updateElData('${el.id}', 'content', this.value)" placeholder="Escreva aqui a descrição épica do cenário ou falas de NPCs..." class="w-full h-64 bg-zinc-950/40 border border-white/10 rounded-[2.5rem] p-10 text-zinc-300 font-narrative text-2xl focus:border-gold/50 outline-none transition-all resize-none shadow-inner">${el.data.content || ''}</textarea></div>`;
+        }
+
+        function updateImageScale(id, val) {
+            const el = state.elements.find(e => e.id === id); if (el) el.data.scale = parseInt(val);
+            const img = document.getElementById(`wrapper-${id}`); if (img) img.style.width = val + '%';
+        }
+
+        function renderAudioBlock(el) {
+            return `<div class="flex flex-col gap-10 bg-zinc-950/50 p-16 rounded-[4rem] border border-white/5 w-full max-w-3xl mx-auto shadow-2xl backdrop-blur-md"><div class="flex items-center gap-8"><div class="w-28 h-28 bg-gradient-to-tr from-green-600/20 to-gold/10 rounded-[2.5rem] flex items-center justify-center border border-white/5 shadow-lg"><i data-lucide="music-4" class="w-12 h-12 text-gold animate-pulse"></i></div><div><h4 class="font-display text-3xl font-black uppercase tracking-tighter italic text-gold">Sinfonia da Campanha</h4><p class="text-zinc-500 text-sm font-medium italic">Som ambiente dedicado a esta cena.</p></div></div><div class="flex-1">${el.data.url ? `<audio controls class="w-full h-16 rounded-full bg-zinc-900 border border-white/5 shadow-2xl opacity-80"><source src="${el.data.url}"></audio>` : `<label class="flex items-center justify-center border-2 border-dashed border-white/10 p-20 rounded-[3rem] cursor-pointer hover:bg-white/5 transition-all font-display text-zinc-600 uppercase tracking-widest text-[11px] active:scale-95 shadow-inner">Carregar Ficheiro MP3 <input type="file" class="hidden" accept="audio/*" onchange="uploadToElement('${el.id}', this)"></label>`}</div></div>`;
+        }
+
+        function uploadToElement(id, input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (f) => {
+                    const el = state.elements.find(e => e.id === id); el.data.url = f.target.result; renderEditor();
+                    if (el.type === 'map') setTimeout(() => renderElement(id), 150);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function uploadAudioToElement(id, input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (f) => {
+                    const el = state.elements.find(e => e.id === id); el.data.audioUrl = f.target.result; renderEditor();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function updateElData(id, key, val) { const el = state.elements.find(e => e.id === id); if (el) el.data[key] = val; }
+
+        function toggleMaximize(id) {
+            const header = document.getElementById('main-header');
+            if (state.maximizedId === id) { state.maximizedId = null; header.classList.remove('hidden'); document.body.style.overflow = 'auto'; }
+            else { state.maximizedId = id; header.classList.add('hidden'); document.body.style.overflow = 'hidden'; }
+            state.presentationView = { zoom: 1, x: 0, y: 0 };
+            renderEditor();
+            const el = state.elements.find(e => e.id === id);
+            if(el && el.type === 'map') setTimeout(() => renderElement(id), 100);
+        }
+
+        function removeElement(id) {
+            state.elements = state.elements.filter(e => e.id !== id);
+            if (state.selectedElementId === id) state.selectedElementId = null;
+            renderEditor();
+        }
+
+        function updateContextualPanels() {
+            const panel = document.getElementById('contextual-panels');
+            const activeEl = state.elements.find(e => e.id === state.selectedElementId);
+            if (activeEl && activeEl.type === 'map' && activeEl.data.url && !state.maximizedId) {
+                panel.classList.remove('hidden');
+                const sIn = document.getElementById('input-scale');
+                const oxIn = document.getElementById('input-ox');
+                const oyIn = document.getElementById('input-oy');
+                if(sIn) sIn.value = activeEl.data.gridSettings.scale;
+                if(oxIn) oxIn.value = activeEl.data.gridSettings.ox;
+                if(oyIn) oyIn.value = activeEl.data.gridSettings.oy;
+                renderElement(activeEl.id);
+            } else panel.classList.add('hidden');
+        }
+
+        function renderElement(id) {
+            const el = state.elements.find(e => e.id === id);
+            if (!el || el.type !== 'map' || !el.data.url) return;
+            const svg = document.getElementById(`svg-${id}`);
+            const img = document.getElementById(`img-${id}`);
+            if (!svg || !img) return;
+            svg.innerHTML = '';
+            const s = el.data.gridSettings;
+            const rows = Math.ceil(img.naturalHeight / (s.scale * 1.2)) + 20;
+            const cols = Math.ceil(img.naturalWidth / (s.scale * 1.2)) + 20;
+            let g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            for (let r = -10; r <= rows; r++) {
+                const qOffset = Math.floor(r / 2);
+                for (let q = -10 - qOffset; q <= cols - qOffset; q++) g.appendChild(createHexPath(q, r, "none", "rgba(212, 175, 55, 0.15)", s));
+            }
+            svg.appendChild(g);
+            let tGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            el.data.tokens.forEach(t => {
+                const { x, y } = hexToPixel(t.q, t.r, s);
+                tGroup.appendChild(createHexPath(t.q, t.r, t.color, "white", s, 0.85, true));
+                if (t.icon) {
+                    const is = s.scale * 1.4;
+                    const icon = document.createElementNS("http://www.w3.org/2000/svg", "image");
+                    icon.setAttributeNS(null, "href", t.icon);
+                    icon.setAttributeNS(null, "x", x - is / 2); icon.setAttributeNS(null, "y", y - is / 2);
+                    icon.setAttributeNS(null, "width", is); icon.setAttributeNS(null, "height", is);
+                    tGroup.appendChild(icon);
+                }
+            });
+            svg.appendChild(tGroup);
+        }
+
+        function handleMapClick(e, id) {
+            if (state.maximizedId) return;
+            const el = state.elements.find(e => e.id === id);
+            const rect = e.currentTarget.getBoundingClientRect();
+            const img = document.getElementById(`img-${id}`);
+            const x = (e.clientX - rect.left) * (img.naturalWidth / rect.width);
+            const y = (e.clientY - rect.top) * (img.naturalHeight / rect.height);
+            const { q, r } = pixelToHex(x, y, el.data.gridSettings);
+            const idx = el.data.tokens.findIndex(t => t.q === q && t.r === r);
+            if (idx !== -1) {
+                if (el.data.tokens[idx].color === state.selectedColor && el.data.tokens[idx].icon === state.tokenIcon) el.data.tokens.splice(idx, 1);
+                else { el.data.tokens[idx].color = state.selectedColor; el.data.tokens[idx].icon = state.tokenIcon; }
+            } else el.data.tokens.push({ q, r, color: state.selectedColor, icon: state.tokenIcon });
+            renderElement(id);
+        }
+
+        function hexToPixel(q, r, s) { return { x: s.scale * (SQRT_3 * q + SQRT_3 / 2 * r) + s.ox, y: s.scale * (3 / 2 * r) + s.oy }; }
+        function pixelToHex(x, y, s) { 
+            const adjX = x - s.ox, adjY = y - s.oy;
+            const q = (SQRT_3 / 3 * adjX - 1 / 3 * adjY) / s.scale, r = (2 / 3 * adjY) / s.scale;
+            return hexRound(q, r);
+        }
+        function hexRound(q, r) {
+            let x = q, z = r, y = -x - z, rx = Math.round(x), ry = Math.round(y), rz = Math.round(z);
+            const xd = Math.abs(rx - x), yd = Math.abs(ry - y), zd = Math.abs(rz - z);
+            if (xd > yd && xd > zd) rx = -ry - rz; else if (yd > zd) ry = -rx - rz; else rz = -rx - ry;
+            return { q: rx, r: rz };
+        }
+        function createHexPath(q, r, f, str, s, op = 1, isT = false) {
+            const { x, y } = hexToPixel(q, r, s); const pts = [];
+            for (let i = 0; i < 6; i++) { const rad = (Math.PI / 180) * (60 * i - 30); pts.push(`${x + s.scale * Math.cos(rad)},${y + s.scale * Math.sin(rad)}`); }
+            const p = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+            p.setAttribute("points", pts.join(' ')); p.setAttribute("fill", f); p.setAttribute("stroke", str);
+            p.setAttribute("stroke-width", isT ? "2" : "1"); p.setAttribute("fill-opacity", op); p.setAttribute("class", "pointer-events-none");
+            return p;
+        }
+
+        function exportAdventure() {
+            const data = { title: document.getElementById('adventure-title').value || 'Nova Crônica', elements: state.elements };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `${data.title.toLowerCase().replace(/\s+/g, '-')}.json`; a.click();
+            showNotification("Sua Crônica foi salva!");
+        }
+
+        function importAdventure(data) {
+            state.elements = data.elements; document.getElementById('adventure-title').value = data.title;
+            renderEditor(); showView('editor');
+            setTimeout(() => state.elements.forEach(e => { if (e.type === 'map') renderElement(e.id); }), 300);
+            showNotification("Crônica carregada com sucesso!");
+        }
+
+        function renderHomeGrid() {
+            const grid = document.getElementById('adventures-grid');
+            if(!grid) return;
+            grid.innerHTML = `<div class="block-card p-20 flex flex-col items-center justify-center opacity-40 border-dashed border-2 rounded-[3rem]"><i data-lucide="castle" class="w-20 h-20 mb-6 text-zinc-700"></i><p class="font-display text-[12px] uppercase tracking-[0.5em] text-gold">Sua jornada começa aqui</p></div>`;
+            lucide.createIcons();
+        }
+
+        function showNotification(t) {
+            const n = document.getElementById('notification'); if(!n) return;
+            n.innerHTML = `<div class="flex items-center gap-3"><i data-lucide="sparkles" class="text-gold w-4 h-4 animate-glow-pulse"></i><span class="font-display font-bold text-xs uppercase tracking-widest text-gold">${t}</span></div>`;
+            n.style.display = 'block'; lucide.createIcons();
+            setTimeout(() => n.style.display = 'none', 3000);
+        }
+    </script>
+</body>
+</html>
