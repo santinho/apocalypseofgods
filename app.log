@@ -1,31 +1,7 @@
-nohup: ignoring input
-[INFO] Scanning for projects...
-[INFO] 
-[INFO] --------------------< com.example:apocalypseofgods >--------------------
-[INFO] Building apocalypseofgods 1.0.0-SNAPSHOT
-[INFO]   from pom.xml
-[INFO] --------------------------------[ jar ]---------------------------------
-[INFO] 
-[INFO] --- quarkus:3.2.0.Final:dev (default-cli) @ apocalypseofgods ---
-[INFO] Invoking org.apache.maven.plugins:maven-resources-plugin:3.3.1:resources (default-resources) @ apocalypseofgods
-[INFO] Copying 6 resources from src/main/resources to target/classes
-[INFO] Invoking org.apache.maven.plugins:maven-compiler-plugin:3.13.0:compile (default-compile) @ apocalypseofgods
-[INFO] No sources to compile
-[INFO] Invoking org.apache.maven.plugins:maven-resources-plugin:3.3.1:testResources (default-testResources) @ apocalypseofgods
-[INFO] skip non existing resourceDirectory /home/admin/projects/apocalypseofgods/src/test/resources
-[INFO] Invoking org.apache.maven.plugins:maven-compiler-plugin:3.13.0:testCompile (default-testCompile) @ apocalypseofgods
-[INFO] No sources to compile
-Listening for transport dt_socket at address: 5006
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  04:31 min
-[INFO] Finished at: 2026-02-17T01:33:00Z
-[INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal io.quarkus:quarkus-maven-plugin:3.2.0.Final:dev (default-cli) on project apocalypseofgods: Failed to run: Dev mode process did not complete successfully -> [Help 1]
-[ERROR] 
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR] 
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+__  ____  __  _____   ___  __ ____  ______ 
+ --/ __ \/ / / / _ | / _ \/ //_/ / / / __/ 
+ -/ /_/ / /_/ / __ |/ , _/ ,< / /_/ /\ \   
+--\___\_\____/_/ |_/_/|_/_/|_|\____/___/   
+2026-02-17 23:05:30,508 INFO  [io.quarkus] (main) apocalypseofgods 1.0.0-SNAPSHOT on JVM (powered by Quarkus 3.2.0.Final) started in 2.436s. Listening on: http://0.0.0.0:8082
+2026-02-17 23:05:30,613 INFO  [io.quarkus] (main) Profile prod activated. 
+2026-02-17 23:05:30,614 INFO  [io.quarkus] (main) Installed features: [cdi, resteasy-reactive, smallrye-context-propagation, vertx]

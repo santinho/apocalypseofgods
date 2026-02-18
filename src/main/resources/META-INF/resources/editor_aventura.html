@@ -173,6 +173,12 @@
             background: hsl(var(--card)); border: 1px solid hsl(var(--gold)); padding: 12px 24px;
             border-radius: 50px; z-index: 10000; display: none;
         }
+
+        @media (max-width: 768px) {
+            input[type=range] {
+                touch-action: none;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -203,7 +209,7 @@
         <section id="view-home" class="fade-in">
             <div class="relative h-[55vh] min-h-[450px] flex items-end overflow-hidden">
                 <!-- Imagem do Castelo ao Fundo -->
-                <div class="absolute inset-0 bg-[url('AOG.jpg')] bg-cover bg-[center_40%] opacity-[0.80] scale-95"></div>
+                <div class="absolute inset-0 bg-[url('AOG.jpg')] bg-cover bg-[center_-15%] sm:bg-[center_40%] opacity-[0.80] scale-95"></div>
                 <div class="absolute inset-0 hero-overlay"></div>
                 
                 <div class="relative container mx-auto px-10 pb-12 space-y-4">
@@ -211,16 +217,16 @@
                         <i data-lucide="dice-5" class="w-5 h-5"></i>
                         <span class="font-display text-sm tracking-[0.3em] uppercase">Adventure Builder Pro</span>
                     </div>
-                    <h1 class="font-display text-5xl md:text-7xl text-gold tracking-wide leading-none uppercase italic">Epic Quest<br><span class="text-zinc-100 not-italic">Maker</span></h1>
+                    <h1 class="font-display text-5xl md:text-7xl text-gold tracking-wide leading-none uppercase italic">Quest<br><span class="text-zinc-100 not-italic">Maker</span></h1>
                     <p class="text-zinc-300 max-w-xl text-lg leading-relaxed font-light drop-shadow-lg">
-                        Prepare as suas crônicas. Organize mapas táticos, ilustrações imersivas e trilhas sonoras orquestradas para a sua mesa de jogo.
+                        Prepare as suas crônicas. Organize mapas táticos, ilustrações imersivas e trilhas sonoras emocionantes.
                     </p>
                     
                     <div class="flex items-center gap-4 pt-4">
-                        <button onclick="createNewAdventure()" class="inline-flex items-center justify-center rounded-md bg-gold text-black hover:bg-gold-bright px-10 py-4 font-display text-sm tracking-widest transition-all shadow-lg shadow-gold/20 active:scale-95">
+                        <button onclick="createNewAdventure()" class="inline-flex items-center justify-center rounded-md bg-gold text-black hover:bg-gold-bright w-40 sm:w-auto px-4 sm:px-10 py-2.5 sm:py-4 font-display text-[11px] sm:text-sm tracking-[0.12em] sm:tracking-widest transition-all shadow-lg shadow-gold/20 active:scale-95">
                             NOVA JORNADA
                         </button>
-                        <label class="inline-flex items-center justify-center rounded-md border border-white/10 bg-white/5 text-zinc-300 hover:text-gold hover:border-gold/50 px-10 py-4 font-display text-sm tracking-widest transition-all cursor-pointer backdrop-blur-md">
+                        <label class="inline-flex items-center justify-center rounded-md border border-white/10 bg-white/5 text-zinc-300 hover:text-gold hover:border-gold/50 w-40 sm:w-auto px-4 sm:px-10 py-2.5 sm:py-4 font-display text-[11px] sm:text-sm tracking-[0.12em] sm:tracking-widest transition-all cursor-pointer backdrop-blur-md">
                             CARREGAR .JSON
                             <input type="file" id="json-load-input" class="hidden" accept=".json">
                         </label>
@@ -255,25 +261,68 @@
                 <div class="hud-glass p-6 rounded-[2rem]">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="font-display text-[10px] font-bold text-gold uppercase tracking-widest">Tokens</h3>
-                        <div id="active-token-icon" class="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center overflow-hidden border border-white/10 shadow-inner">
-                             <i data-lucide="user" class="w-4 h-4 text-zinc-700"></i>
+                        <div class="flex items-center gap-2">
+                            <div id="active-token-icon" class="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center overflow-hidden border border-white/10 shadow-inner">
+                                 <i data-lucide="user" class="w-4 h-4 text-zinc-700"></i>
+                            </div>
+                            <button id="tokens-section-toggle" onclick="toggleCollapsibleSection('tokens-section-body', 'tokens-section-toggle')" class="w-6 h-6 rounded-full border border-white/15 text-zinc-400 hover:text-gold hover:border-gold/40 text-sm leading-none">+</button>
                         </div>
                     </div>
-                    <div id="color-palette" class="grid grid-cols-5 gap-2 mb-4"></div>
-                    <label class="flex items-center justify-center gap-2 bg-white/5 hover:bg-gold/20 p-2 rounded-lg cursor-pointer transition-all text-[9px] font-bold uppercase tracking-widest border border-white/5">
-                        <i data-lucide="image" class="w-3 h-3"></i> Mudar Ícone
-                        <input type="file" id="token-file-input" class="hidden" accept="image/*">
-                    </label>
+                    <div id="tokens-section-body" class="hidden">
+                        <div id="color-palette" class="grid grid-cols-5 gap-2 mb-4"></div>
+                        <label class="flex items-center justify-center gap-2 bg-white/5 hover:bg-gold/20 p-2 rounded-lg cursor-pointer transition-all text-[9px] font-bold uppercase tracking-widest border border-white/5">
+                            <i data-lucide="image" class="w-3 h-3"></i> Mudar Ícone
+                            <input type="file" id="token-file-input" class="hidden" accept="image/*">
+                        </label>
+                    </div>
                 </div>
 
                 <!-- Grid -->
                 <div class="hud-glass p-6 rounded-[2rem]">
-                    <h3 class="font-display text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-4">Alinhamento Grid</h3>
-                    <div class="space-y-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-display text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Alinhamento Grid</h3>
+                        <button id="grid-section-toggle" onclick="toggleCollapsibleSection('grid-section-body', 'grid-section-toggle')" class="w-6 h-6 rounded-full border border-white/15 text-zinc-400 hover:text-gold hover:border-gold/40 text-sm leading-none">+</button>
+                    </div>
+                    <div id="grid-section-body" class="space-y-4 hidden">
+                        <div class="text-[9px] uppercase tracking-widest text-zinc-500">Tamanho do Hex</div>
                         <input type="range" id="input-scale" min="10" max="100" value="30" class="w-full accent-gold">
-                        <div class="flex gap-2">
+                        <div class="w-full">
+                            <div class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Offset X</div>
                             <input type="range" id="input-ox" min="-500" max="500" value="0" class="w-full">
+                        </div>
+                        <div class="w-full">
+                            <div class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Offset Y</div>
                             <input type="range" id="input-oy" min="-500" max="500" value="0" class="w-full">
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div>
+                                <div class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Cor</div>
+                                <input type="color" id="input-grid-color" value="#ffffff" class="w-10 h-10 rounded-md bg-transparent border border-white/10 p-0">
+                            </div>
+                            <div class="w-full">
+                                <div class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Opacidade</div>
+                                <input type="range" id="input-grid-opacity" min="0.05" max="1" step="0.05" value="0.15" class="w-full accent-gold">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mapa -->
+                <div id="map-transform-panel" class="hud-glass p-6 rounded-[2rem] hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-display text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Alinhamento Mapa</h3>
+                        <button id="map-section-toggle" onclick="toggleCollapsibleSection('map-section-body', 'map-section-toggle')" class="w-6 h-6 rounded-full border border-white/15 text-zinc-400 hover:text-gold hover:border-gold/40 text-sm leading-none">+</button>
+                    </div>
+                    <div id="map-section-body" class="space-y-4 hidden">
+                        <div class="text-[9px] uppercase tracking-widest text-zinc-500">Zoom do Mapa</div>
+                        <input type="range" id="input-map-scale" min="25" max="250" value="100" class="w-full accent-gold">
+                        <div class="w-full">
+                            <div class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Posição X</div>
+                            <input type="range" id="input-map-x" min="-800" max="800" value="0" class="w-full">
+                        </div>
+                        <div class="w-full">
+                            <div class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Posição Y</div>
+                            <input type="range" id="input-map-y" min="-800" max="800" value="0" class="w-full">
                         </div>
                     </div>
                 </div>
@@ -320,6 +369,10 @@
             presentationView: { zoom: 1, x: 0, y: 0 }
         };
 
+        function getElementPresentationView(el) {
+            return el?.data?.presentationView || { zoom: 1, x: 0, y: 0 };
+        }
+
         const COLORS = [
             { name: 'H', value: '#3b82f6' }, { name: 'I', value: '#ef4444' },
             { name: 'E', value: '#a855f7' }, { name: 'B', value: '#f97316' },
@@ -354,6 +407,15 @@
             if(container.children.length > 0) container.children[0].classList.add('border-white');
         }
 
+        function toggleCollapsibleSection(bodyId, toggleId) {
+            const body = document.getElementById(bodyId);
+            const toggle = document.getElementById(toggleId);
+            if (!body || !toggle) return;
+            const willOpen = body.classList.contains('hidden');
+            body.classList.toggle('hidden');
+            toggle.textContent = willOpen ? '-' : '+';
+        }
+
         function initGlobalEvents() {
             const tokenInput = document.getElementById('token-file-input');
             if(tokenInput) {
@@ -378,9 +440,25 @@
                     const sIn = document.getElementById('input-scale');
                     const oxIn = document.getElementById('input-ox');
                     const oyIn = document.getElementById('input-oy');
+                    const gcIn = document.getElementById('input-grid-color');
+                    const goIn = document.getElementById('input-grid-opacity');
                     if(sIn) el.data.gridSettings.scale = parseInt(sIn.value);
                     if(oxIn) el.data.gridSettings.ox = parseInt(oxIn.value);
                     if(oyIn) el.data.gridSettings.oy = parseInt(oyIn.value);
+                    if(gcIn) el.data.gridSettings.color = gcIn.value;
+                    if(goIn) el.data.gridSettings.opacity = parseFloat(goIn.value);
+
+                    const mapScaleIn = document.getElementById('input-map-scale');
+                    const mapXIn = document.getElementById('input-map-x');
+                    const mapYIn = document.getElementById('input-map-y');
+                    if (mapScaleIn) el.data.scale = parseInt(mapScaleIn.value);
+                    if (mapXIn) el.data.panX = parseInt(mapXIn.value);
+                    if (mapYIn) el.data.panY = parseInt(mapYIn.value);
+                    const wrapper = document.getElementById(`wrapper-${el.id}`);
+                    if (wrapper) {
+                        const mapScale = (el.data.scale || 100) / 100;
+                        wrapper.style.transform = `translate(${el.data.panX || 0}px, ${el.data.panY || 0}px) scale(${mapScale})`;
+                    }
                     renderElement(el.id);
                 }
             };
@@ -389,6 +467,11 @@
             if (isInput('input-scale')) isInput('input-scale').oninput = updateActiveMap;
             if (isInput('input-ox')) isInput('input-ox').oninput = updateActiveMap;
             if (isInput('input-oy')) isInput('input-oy').oninput = updateActiveMap;
+            if (isInput('input-grid-color')) isInput('input-grid-color').oninput = updateActiveMap;
+            if (isInput('input-grid-opacity')) isInput('input-grid-opacity').oninput = updateActiveMap;
+            if (isInput('input-map-scale')) isInput('input-map-scale').oninput = updateActiveMap;
+            if (isInput('input-map-x')) isInput('input-map-x').oninput = updateActiveMap;
+            if (isInput('input-map-y')) isInput('input-map-y').oninput = updateActiveMap;
 
             const jsonInput = document.getElementById('json-load-input');
             if(jsonInput) {
@@ -417,6 +500,11 @@
             window.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && state.maximizedId) {
                     toggleMaximize(state.maximizedId);
+                    return;
+                }
+                if (state.maximizedId && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
+                    e.preventDefault();
+                    navigateMaximized(e.key === 'ArrowRight' ? 1 : -1);
                 }
             });
         }
@@ -469,7 +557,7 @@
         function addElement(type, index) {
             const id = 'el-' + Date.now();
             const newEl = {
-                id, type, data: { url: null, audioUrl: null, title: type === 'map' ? 'Novo Mapa' : (type === 'audio' ? 'Ambiente' : (type === 'text' ? 'Crônica' : 'Cena Visual')), scale: type === 'text' ? 1 : 100, panX: 0, panY: 0, content: '', tokens: [], gridSettings: { scale: 30, ox: 0, oy: 0, color: '#ffffff', opacity: 0.15 } }
+                id, type, data: { url: null, audioUrl: null, title: type === 'map' ? 'Novo Mapa' : (type === 'audio' ? 'Ambiente' : (type === 'text' ? 'Crônica' : 'Cena Visual')), scale: type === 'text' ? 1 : 100, panX: 0, panY: 0, content: '', tokens: [], gridSettings: { scale: 30, ox: 0, oy: 0, color: '#ffffff', opacity: 0.15 }, presentationView: { zoom: 1, x: 0, y: 0 } }
             };
             state.elements.splice(index, 0, newEl);
             state.selectedElementId = id;
@@ -512,11 +600,42 @@
                 <div class="content-container p-6 relative flex flex-col items-center">
                     ${contentHtml}
                     ${isMax ? `<button onclick="toggleMaximize('${el.id}')" class="fixed top-8 right-8 z-[10005] bg-black/40 hover:bg-gold/30 backdrop-blur-md text-white p-5 rounded-full transition-all border border-gold/30 shadow-2xl active:scale-95"><i data-lucide="x" class="w-6 h-6"></i></button>` : ''}
+                    ${isMax ? renderMaxNavigation() : ''}
                     ${isMax ? renderPresentationHUD(el) : ''}
                 </div>
                 ${(el.type === 'map' || el.type === 'image' || el.type === 'text') ? renderAudioFooter(el, isMax) : ''}
             `;
             return div;
+        }
+
+        function renderMaxNavigation() {
+            if (!state.maximizedId || state.elements.length < 2) return '';
+            const currentIndex = state.elements.findIndex(e => e.id === state.maximizedId);
+            const positionLabel = `${currentIndex === -1 ? 1 : currentIndex + 1} / ${state.elements.length}`;
+            return `
+                <button onclick="navigateMaximized(-1)" class="fixed left-6 top-1/2 -translate-y-1/2 z-[10015] bg-black/55 hover:bg-gold text-gold hover:text-black w-14 h-14 rounded-full border border-gold/40 shadow-2xl transition-all active:scale-95 backdrop-blur-md" title="Componente anterior">
+                    <i data-lucide="chevron-left" class="w-7 h-7 mx-auto"></i>
+                </button>
+                <div class="fixed top-6 left-1/2 -translate-x-1/2 z-[10015] bg-black/55 text-gold border border-gold/35 rounded-full px-5 py-2 text-[10px] tracking-[0.2em] font-black uppercase backdrop-blur-md">
+                    ${positionLabel}
+                </div>
+                <button onclick="navigateMaximized(1)" class="fixed right-6 top-1/2 -translate-y-1/2 z-[10015] bg-black/55 hover:bg-gold text-gold hover:text-black w-14 h-14 rounded-full border border-gold/40 shadow-2xl transition-all active:scale-95 backdrop-blur-md" title="Próximo componente">
+                    <i data-lucide="chevron-right" class="w-7 h-7 mx-auto"></i>
+                </button>
+            `;
+        }
+
+        function navigateMaximized(direction) {
+            if (!state.maximizedId || state.elements.length < 2) return;
+            const currentIndex = state.elements.findIndex(e => e.id === state.maximizedId);
+            if (currentIndex === -1) return;
+            const nextIndex = (currentIndex + direction + state.elements.length) % state.elements.length;
+            const nextEl = state.elements[nextIndex];
+            state.maximizedId = nextEl.id;
+            state.selectedElementId = nextEl.id;
+            state.presentationView = { ...getElementPresentationView(nextEl) };
+            renderEditor();
+            if (nextEl.type === 'map') setTimeout(() => renderElement(nextEl.id), 100);
         }
 
         function renderPresentationHUD(el) {
@@ -542,6 +661,8 @@
 
         function updatePresentationView(id, prop, val) {
             state.presentationView[prop] = parseFloat(val);
+            const el = state.elements.find(e => e.id === id);
+            if (el) el.data.presentationView = { ...state.presentationView };
             const zoomLabel = document.getElementById('hud-val-zoom');
             if (prop === 'zoom' && zoomLabel) zoomLabel.innerText = Math.round(val * 100) + '%';
             const wrapper = document.getElementById(`wrapper-${id}`);
@@ -550,8 +671,9 @@
 
         function resetPresentationView(id) {
             state.presentationView = { zoom: 1, x: 0, y: 0 };
-            renderEditor();
             const el = state.elements.find(e => e.id === id);
+            if (el) el.data.presentationView = { ...state.presentationView };
+            renderEditor();
             if(el && el.type === 'map') setTimeout(() => renderElement(id), 50);
         }
 
@@ -578,7 +700,8 @@
 
         function renderMapBlock(el, isMax) {
             if (!el.data.url) return `<div class="py-24 flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-[2.5rem] w-full bg-white/5"><label class="bg-gold text-black px-10 py-5 rounded-full cursor-pointer text-[10px] font-display font-black uppercase tracking-widest active:scale-95 shadow-xl hover:bg-gold-bright transition-all">Desbravar Mapa<input type="file" class="hidden" accept="image/*" onchange="uploadToElement('${el.id}', this)"></label></div>`;
-            const transform = isMax ? `transform: translate(${state.presentationView.x}px, ${state.presentationView.y}px) scale(${state.presentationView.zoom})` : ``;
+            const mapScale = (el.data.scale || 100) / 100;
+            const transform = isMax ? `transform: translate(${state.presentationView.x}px, ${state.presentationView.y}px) scale(${state.presentationView.zoom})` : `transform: translate(${el.data.panX || 0}px, ${el.data.panY || 0}px) scale(${mapScale})`;
             return `<div class="relative bg-black rounded-none overflow-hidden w-full ring-1 ring-white/10 ${isMax ? 'h-[100svh]' : 'h-[650px]'} flex items-center justify-center shadow-inner"><div class="map-viewport relative h-full w-full scrollbar-hide flex justify-center items-start" id="viewport-${el.id}"><div class="relative inline-block transition-transform duration-75" id="wrapper-${el.id}" style="${transform}"><img src="${el.data.url}" class="block max-w-none opacity-80 select-none pointer-events-none" id="img-${el.id}"><svg class="absolute inset-0 w-full h-full hex-grid-svg" id="svg-${el.id}" onclick="handleMapClick(event, '${el.id}')"></svg></div></div></div>`;
         }
 
@@ -598,7 +721,22 @@
 
         function updateImageScale(id, val) {
             const el = state.elements.find(e => e.id === id); if (el) el.data.scale = parseInt(val);
-            const img = document.getElementById(`wrapper-${id}`); if (img) img.style.width = val + '%';
+            const img = document.getElementById(`wrapper-${id}`);
+            if (img) img.style.width = val + '%';
+        }
+
+        function updateMapTransform(id, prop, val) {
+            const el = state.elements.find(e => e.id === id);
+            if (!el || el.type !== 'map') return;
+            const parsed = parseInt(val);
+            if (prop === 'scale') el.data.scale = parsed;
+            if (prop === 'panX') el.data.panX = parsed;
+            if (prop === 'panY') el.data.panY = parsed;
+            const wrapper = document.getElementById(`wrapper-${id}`);
+            if (wrapper && !state.maximizedId) {
+                const mapScale = (el.data.scale || 100) / 100;
+                wrapper.style.transform = `translate(${el.data.panX || 0}px, ${el.data.panY || 0}px) scale(${mapScale})`;
+            }
         }
 
         function renderAudioBlock(el) {
@@ -632,9 +770,14 @@
 
         function toggleMaximize(id) {
             const header = document.getElementById('main-header');
-            if (state.maximizedId === id) { state.maximizedId = null; header.classList.remove('hidden'); document.body.style.overflow = 'auto'; }
-            else { state.maximizedId = id; header.classList.add('hidden'); document.body.style.overflow = 'hidden'; }
-            state.presentationView = { zoom: 1, x: 0, y: 0 };
+            if (state.maximizedId === id) { state.maximizedId = null; header.classList.remove('hidden'); document.body.style.overflow = 'auto'; state.presentationView = { zoom: 1, x: 0, y: 0 }; }
+            else {
+                state.maximizedId = id;
+                header.classList.add('hidden');
+                document.body.style.overflow = 'hidden';
+                const el = state.elements.find(e => e.id === id);
+                state.presentationView = { ...getElementPresentationView(el) };
+            }
             renderEditor();
             const el = state.elements.find(e => e.id === id);
             if(el && el.type === 'map') setTimeout(() => renderElement(id), 100);
@@ -648,17 +791,32 @@
 
         function updateContextualPanels() {
             const panel = document.getElementById('contextual-panels');
+            const mapPanel = document.getElementById('map-transform-panel');
             const activeEl = state.elements.find(e => e.id === state.selectedElementId);
             if (activeEl && activeEl.type === 'map' && activeEl.data.url && !state.maximizedId) {
                 panel.classList.remove('hidden');
                 const sIn = document.getElementById('input-scale');
                 const oxIn = document.getElementById('input-ox');
                 const oyIn = document.getElementById('input-oy');
+                const gcIn = document.getElementById('input-grid-color');
+                const goIn = document.getElementById('input-grid-opacity');
                 if(sIn) sIn.value = activeEl.data.gridSettings.scale;
                 if(oxIn) oxIn.value = activeEl.data.gridSettings.ox;
                 if(oyIn) oyIn.value = activeEl.data.gridSettings.oy;
+                if(gcIn) gcIn.value = activeEl.data.gridSettings.color || '#ffffff';
+                if(goIn) goIn.value = activeEl.data.gridSettings.opacity ?? 0.15;
+                if (mapPanel) mapPanel.classList.remove('hidden');
+                const mapScaleIn = document.getElementById('input-map-scale');
+                const mapXIn = document.getElementById('input-map-x');
+                const mapYIn = document.getElementById('input-map-y');
+                if (mapScaleIn) mapScaleIn.value = activeEl.data.scale || 100;
+                if (mapXIn) mapXIn.value = activeEl.data.panX || 0;
+                if (mapYIn) mapYIn.value = activeEl.data.panY || 0;
                 renderElement(activeEl.id);
-            } else panel.classList.add('hidden');
+            } else {
+                panel.classList.add('hidden');
+                if (mapPanel) mapPanel.classList.add('hidden');
+            }
         }
 
         function renderElement(id) {
@@ -674,7 +832,7 @@
             let g = document.createElementNS("http://www.w3.org/2000/svg", "g");
             for (let r = -10; r <= rows; r++) {
                 const qOffset = Math.floor(r / 2);
-                for (let q = -10 - qOffset; q <= cols - qOffset; q++) g.appendChild(createHexPath(q, r, "none", "rgba(212, 175, 55, 0.15)", s));
+                for (let q = -10 - qOffset; q <= cols - qOffset; q++) g.appendChild(createHexPath(q, r, "none", hexToRgba(s.color || '#ffffff', s.opacity ?? 0.15), s));
             }
             svg.appendChild(g);
             let tGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -696,6 +854,7 @@
         function handleMapClick(e, id) {
             if (state.maximizedId) return;
             const el = state.elements.find(e => e.id === id);
+            if (!el || el.type !== 'map') return;
             const rect = e.currentTarget.getBoundingClientRect();
             const img = document.getElementById(`img-${id}`);
             const x = (e.clientX - rect.left) * (img.naturalWidth / rect.width);
@@ -710,6 +869,15 @@
         }
 
         function hexToPixel(q, r, s) { return { x: s.scale * (SQRT_3 * q + SQRT_3 / 2 * r) + s.ox, y: s.scale * (3 / 2 * r) + s.oy }; }
+        function hexToRgba(hex, alpha) {
+            const c = (hex || '#ffffff').replace('#', '');
+            const v = c.length === 3 ? c.split('').map(ch => ch + ch).join('') : c;
+            const n = parseInt(v, 16);
+            const r = (n >> 16) & 255;
+            const g = (n >> 8) & 255;
+            const b = n & 255;
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
         function pixelToHex(x, y, s) { 
             const adjX = x - s.ox, adjY = y - s.oy;
             const q = (SQRT_3 / 3 * adjX - 1 / 3 * adjY) / s.scale, r = (2 / 3 * adjY) / s.scale;
@@ -731,7 +899,14 @@
         }
 
         function exportAdventure() {
-            const data = { title: document.getElementById('adventure-title').value || 'Nova Crônica', elements: state.elements };
+            const elements = state.elements.map(el => ({
+                ...el,
+                data: {
+                    ...el.data,
+                    presentationView: el.data?.presentationView || { zoom: 1, x: 0, y: 0 }
+                }
+            }));
+            const data = { title: document.getElementById('adventure-title').value || 'Nova Crônica', elements };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url; a.download = `${data.title.toLowerCase().replace(/\s+/g, '-')}.json`; a.click();
@@ -747,7 +922,13 @@
             const adventure = {
                 id: `adv-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
                 title: data.title || "Crônica sem título",
-                elements: data.elements
+                elements: data.elements.map(el => ({
+                    ...el,
+                    data: {
+                        ...el.data,
+                        presentationView: el.data?.presentationView || { zoom: 1, x: 0, y: 0 }
+                    }
+                }))
             };
 
             state.libraryAdventures.unshift(adventure);
@@ -761,7 +942,13 @@
             const adventure = state.libraryAdventures.find(a => a.id === id);
             if (!adventure) return;
 
-            state.elements = JSON.parse(JSON.stringify(adventure.elements));
+            state.elements = JSON.parse(JSON.stringify(adventure.elements)).map(el => ({
+                ...el,
+                data: {
+                    ...el.data,
+                    presentationView: el.data?.presentationView || { zoom: 1, x: 0, y: 0 }
+                }
+            }));
             state.selectedElementId = null;
             state.maximizedId = null;
             document.getElementById('adventure-title').value = adventure.title;

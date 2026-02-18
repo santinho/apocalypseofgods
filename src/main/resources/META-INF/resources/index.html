@@ -1,232 +1,1024 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+﻿<!DOCTYPE html>
+<html lang="pt">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Apocalypse Of Gods</title>
-  <style>
-    :root {
-      --btn-bg: rgba(0, 0, 0, 0.65);
-      --btn-border: rgba(255, 255, 255, 0.75);
-      --btn-text: #ffffff;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenBoardGame - Adventure Builder Pro</title>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: 'hsl(var(--background) / <alpha-value>)',
+                        foreground: 'hsl(var(--foreground) / <alpha-value>)',
+                        primary: 'hsl(var(--primary) / <alpha-value>)',
+                        gold: 'hsl(var(--gold) / <alpha-value>)',
+                        'gold-bright': 'hsl(var(--primary) / <alpha-value>)'
+                    },
+                    fontFamily: {
+                        display: ['Cinzel', 'serif'],
+                        narrative: ['Crimson Text', 'serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap');
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+        :root {
+            --background: 30 10% 8%;
+            --foreground: 40 30% 85%;
+            --card: 30 12% 12%;
+            --card-foreground: 40 30% 85%;
+            --popover: 30 12% 12%;
+            --popover-foreground: 40 30% 85%;
+            --primary: 40 80% 50%;
+            --primary-foreground: 30 10% 8%;
+            --secondary: 0 50% 30%;
+            --secondary-foreground: 40 30% 90%;
+            --muted: 30 10% 16%;
+            --muted-foreground: 30 15% 50%;
+            --accent: 150 40% 25%;
+            --accent-foreground: 150 30% 85%;
+            --destructive: 0 70% 45%;
+            --destructive-foreground: 0 0% 95%;
+            --border: 35 20% 20%;
+            --input: 35 15% 18%;
+            --ring: 40 80% 50%;
+            --radius: .375rem;
+            --gold: 40 80% 50%;
+            --gold-dim: 40 60% 35%;
+            --crimson: 0 50% 30%;
+            --arcane: 260 50% 40%;
+            --forest: 150 40% 25%;
+            --parchment: 40 30% 85%;
+            --shadow-glow: 0 0px 30px -5px hsl(40 80% 50% / .15);
+            --shadow-arcane: 0 0px 20px -5px hsl(260 50% 40% / .3);
+            --card-gradient: linear-gradient(135deg, hsl(var(--card) / .85) 0%, hsl(var(--background) / .95) 100%);
+        }
 
-    html, body {
-      width: 100%;
-      height: 100%;
-      min-height: 100%;
-      overflow: hidden;
-      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
-      background: #000;
-    }
+        body {
+            font-family: 'Crimson Text', serif;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-weight: 400;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-image:
+                radial-gradient(circle at 15% 20%, hsl(var(--gold) / .08) 0%, transparent 28%),
+                radial-gradient(circle at 80% 0%, hsl(var(--crimson) / .08) 0%, transparent 36%);
+            overflow-x: hidden;
+        }
 
-    body {
-      display: grid;
-      place-items: center;
-    }
+        .font-display { font-family: 'Cinzel', serif; }
+        .font-narrative { font-family: 'Crimson Text', serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Cinzel', serif; }
 
-    .app-frame {
-      position: relative;
-      width: min(100vw, calc(100dvh * 9 / 16));
-      height: min(100dvh, calc(100vw * 16 / 9));
-      aspect-ratio: 9 / 16;
-      background: #000;
-      overflow: hidden;
-    }
+        /* Efeitos Visuais Epicos */
+        .text-gold { color: hsl(var(--gold)); }
+        .bg-gold { background-color: hsl(var(--gold)); }
+        .border-ornate { border: 1px solid hsl(var(--gold) / .3); }
 
-    .screen {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      padding: 24px;
-      transition: opacity 260ms ease;
-      background: #000;
-    }
+        .hero-overlay {
+            background: linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background) / .4) 100%);
+        }
 
-    .screen.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
+        .glow-gold:hover {
+            box-shadow: var(--shadow-glow);
+            border-color: hsl(var(--gold));
+        }
 
-    .scene-image {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      object-position: center;
-      transform: scale(var(--zoom, 1));
-      transform-origin: center;
-      user-select: none;
-      pointer-events: none;
-    }
+        @keyframes glow-pulse {
+            0%, 100% { filter: drop-shadow(0 0 5px hsl(var(--gold) / .5)); }
+            50% { filter: drop-shadow(0 0 15px hsl(var(--gold) / .8)); }
+        }
+        .animate-glow-pulse { animation: glow-pulse 3s infinite; }
 
-    #adventure-screen {
-      opacity: 0;
-      pointer-events: none;
-    }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-float { animation: float 4s ease-in-out infinite; }
 
-    #adventure-screen.visible {
-      opacity: 1;
-      pointer-events: auto;
-    }
+        /* Sliders */
+        input[type=range] {
+            height: 4px;
+            -webkit-appearance: none;
+            background: hsl(var(--gold) / .1);
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: hsl(var(--gold));
+            cursor: pointer;
+            border: 2px solid white;
+        }
 
-    .adventure-actions {
-      position: relative;
-      z-index: 2;
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      padding-bottom: 4px;
-    }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .hex-grid-svg { cursor: crosshair; }
 
-    .start-btn {
-      width: min(90vw, 360px);
-      border: 2px solid var(--btn-border);
-      border-radius: 14px;
-      background: var(--btn-bg);
-      color: var(--btn-text);
-      padding: 16px 20px;
-      font-size: clamp(1.1rem, 4.4vw, 1.35rem);
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
+        .block-card {
+            background: var(--card-gradient);
+            backdrop-filter: blur(12px);
+            border: 1px solid hsl(var(--border) / .6);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .block-card.active {
+            border-color: hsl(var(--gold));
+            box-shadow: var(--shadow-glow);
+        }
 
-    .start-btn:active {
-      transform: scale(0.98);
-    }
+        /* Modo Maximizado */
+        .maximized-element {
+            position: fixed !important; top: 0 !important; left: 0 !important;
+            width: 100vw !important; height: 100vh !important;
+            z-index: 9999 !important; background: #000 !important;
+            border: none !important; border-radius: 0 !important; margin: 0 !important;
+        }
+        .maximized-element .edit-ui, .maximized-element .insert-bar { display: none !important; }
+        .maximized-element .content-container {
+            height: 100vh !important; display: flex; align-items: center; justify-content: center; padding: 0 !important;
+        }
+        .max-control-zone {
+            position: fixed;
+        }
+        .max-overlay-panel {
+            opacity: .12;
+            transition: opacity .2s ease, border-color .2s ease;
+            border-color: hsl(var(--gold) / .1) !important;
+        }
+        .max-control-zone:hover .max-overlay-panel,
+        .max-overlay-panel:focus-within {
+            opacity: .98;
+            border-color: hsl(var(--gold) / .35) !important;
+        }
 
-    .map-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.92);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      z-index: 10;
-    }
+        .hud-glass {
+            background: hsl(var(--card) / .78);
+            backdrop-filter: blur(25px);
+            border: 1px solid hsl(var(--gold) / .2);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+        }
 
-    .map-overlay.visible {
-      display: flex;
-    }
+        #notification {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: hsl(var(--card)); border: 1px solid hsl(var(--gold)); padding: 12px 24px;
+            border-radius: 50px; z-index: 10000; display: none;
+        }
 
-    .map-image {
-      --zoom: 1;
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-      border: 2px solid rgba(255, 255, 255, 0.5);
-      border-radius: 10px;
-      transform: scale(var(--zoom, 1));
-      transform-origin: center;
-    }
-
-    .close-map-btn {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      width: auto;
-      padding: 10px 14px;
-      font-size: 0.95rem;
-    }
-  </style>
+        @media (max-width: 768px) {
+            input[type=range] {
+                touch-action: none;
+            }
+        }
+    </style>
 </head>
-<body>
-  <main class="app-frame">
-    <section id="start-screen" class="screen">
-      <img id="start-image" class="scene-image" src="./AOG.jpg" alt="">
-      <button id="start-button" class="start-btn" type="button">Iniciar</button>
-    </section>
+<body class="min-h-screen">
 
-    <section id="adventure-screen" class="screen" aria-hidden="true">
-      <img id="adventure-image" class="scene-image" src="./Aventura01.png" alt="">
-      <div class="adventure-actions">
-        <button id="map-button" class="start-btn" type="button">Ver mapa</button>
-      </div>
-    </section>
+    <div id="notification"></div>
 
-    <div id="map-overlay" class="map-overlay" aria-hidden="true">
-      <button id="close-map-button" class="start-btn close-map-btn" type="button">Fechar</button>
-      <img class="map-image" src="./mapa01.jpg" alt="Mapa da aventura">
-    </div>
-  </main>
+    <!-- NAVBAR -->
+    <header id="main-header" class="sticky top-0 z-50 w-full border-b border-white/5 bg-background/80 backdrop-blur-md">
+        <div class="container mx-auto flex h-14 items-center justify-between px-6">
+            <a class="flex items-center gap-2 group cursor-pointer" onclick="showView('home')">
+                <img src="openboardgame-icon.png" alt="OpenBoardGame" class="w-9 h-9 object-contain">
+                <span class="font-display text-lg tracking-wider text-gold">OpenBoardGame</span>
+            </a>
+            <div id="nav-actions" class="hidden flex items-center gap-4">
+                <button onclick="exportAdventure()" class="text-xs font-display text-gold border border-gold/30 px-4 py-1.5 rounded-md hover:bg-gold/10 transition-all uppercase tracking-widest">
+                    Exportar Crônica
+                </button>
+                <button onclick="showView('home')" class="text-zinc-500 hover:text-gold transition-colors">
+                    <i data-lucide="scroll" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </header>
 
-  <audio id="adventure-audio" src="./Aventura1.mp3" preload="auto"></audio>
+    <main id="app-container">
+        
+        <!-- HOME SECTION / HERO COM IMAGEM DO CASTELO -->
+        <section id="view-home" class="fade-in">
+            <div class="relative h-[55vh] min-h-[450px] flex items-end overflow-hidden">
+                <!-- Imagem do Castelo ao Fundo -->
+                <div class="absolute inset-0 bg-[url('AOG.jpg')] bg-cover bg-[center_-15%] sm:bg-[center_40%] opacity-[0.80] scale-95"></div>
+                <div class="absolute inset-0 hero-overlay"></div>
+                
+                <div class="relative container mx-auto px-10 pb-12 space-y-4">
+                    <div class="flex items-center gap-2 text-gold animate-float">
+                        <i data-lucide="dice-5" class="w-5 h-5"></i>
+                        <span class="font-display text-sm tracking-[0.3em] uppercase">Adventure Builder Pro</span>
+                    </div>
+                    <h1 class="font-display text-5xl md:text-7xl text-gold tracking-wide leading-none uppercase italic">Quest<br><span class="text-zinc-100 not-italic">Maker</span></h1>
+                    <p class="text-zinc-300 max-w-xl text-lg leading-relaxed font-light drop-shadow-lg">
+                        Prepare as suas crônicas. Organize mapas táticos, ilustrações imersivas e trilhas sonoras emocionantes.
+                    </p>
+                    
+                    <div class="flex items-center gap-4 pt-4">
+                        <button onclick="createNewAdventure()" class="inline-flex items-center justify-center rounded-md bg-gold text-black hover:bg-gold-bright w-40 sm:w-auto px-4 sm:px-10 py-2.5 sm:py-4 font-display text-[11px] sm:text-sm tracking-[0.12em] sm:tracking-widest transition-all shadow-lg shadow-gold/20 active:scale-95">
+                            NOVA JORNADA
+                        </button>
+                        <label class="inline-flex items-center justify-center rounded-md border border-white/10 bg-white/5 text-zinc-300 hover:text-gold hover:border-gold/50 w-40 sm:w-auto px-4 sm:px-10 py-2.5 sm:py-4 font-display text-[11px] sm:text-sm tracking-[0.12em] sm:tracking-widest transition-all cursor-pointer backdrop-blur-md">
+                            CARREGAR .JSON
+                            <input type="file" id="json-load-input" class="hidden" accept=".json">
+                        </label>
+                    </div>
+                </div>
+            </div>
 
-  <script>
-    const startButton = document.getElementById("start-button");
-    const mapButton = document.getElementById("map-button");
-    const closeMapButton = document.getElementById("close-map-button");
-    const appFrame = document.querySelector(".app-frame");
-    const startImage = document.getElementById("start-image");
-    const adventureImage = document.getElementById("adventure-image");
-    const mapImage = document.querySelector(".map-image");
-    const startScreen = document.getElementById("start-screen");
-    const adventureScreen = document.getElementById("adventure-screen");
-    const mapOverlay = document.getElementById("map-overlay");
-    const adventureAudio = document.getElementById("adventure-audio");
-    const zoomByElement = new Map([
-      [startImage, 1],
-      [adventureImage, 1],
-      [mapImage, 1]
-    ]);
+            <div class="container mx-auto px-10 py-16">
+                <div class="flex items-center gap-3 mb-10">
+                    <i data-lucide="sword" class="w-5 h-5 text-gold"></i>
+                    <h2 class="font-display text-xl text-gold uppercase tracking-[0.2em]">Sua Biblioteca de Aventuras</h2>
+                </div>
+                <div id="adventures-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Cards de aventuras injetados aqui -->
+                </div>
+            </div>
+        </section>
 
-    function applyZoom(element, value) {
-      const clamped = Math.min(4, Math.max(1, value));
-      zoomByElement.set(element, clamped);
-      element.style.setProperty("--zoom", clamped.toFixed(2));
-    }
+        <!-- EDITOR SECTION -->
+        <section id="view-editor" class="hidden container mx-auto px-10 py-12 fade-in pb-32">
+            <div class="flex flex-col gap-2 mb-12">
+                <input type="text" id="adventure-title" placeholder="Nome da Aventura..." 
+                    class="bg-transparent border-none font-display font-black text-5xl md:text-6xl focus:ring-0 text-gold w-full outline-none placeholder:text-white/10 transition-all">
+                <div class="h-1 w-24 bg-gold rounded-full"></div>
+            </div>
 
-    function getActiveZoomElement() {
-      if (mapOverlay.classList.contains("visible")) return mapImage;
-      if (adventureScreen.classList.contains("visible")) return adventureImage;
-      return startImage;
-    }
+            <div id="editor-blocks" class="flex flex-col gap-8"></div>
 
-    function startAdventure() {
-      startScreen.classList.add("hidden");
-      adventureScreen.classList.add("visible");
-      adventureScreen.setAttribute("aria-hidden", "false");
+            <!-- PAINÉIS HUD DO EDITOR -->
+            <div id="contextual-panels" class="fixed bottom-8 right-8 z-[60] hidden flex flex-col gap-4 w-72">
+                <!-- Tokens -->
+                <div class="hud-glass p-6 rounded-[2rem]">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-display text-[10px] font-bold text-gold uppercase tracking-widest">Tokens</h3>
+                        <div class="flex items-center gap-2">
+                            <div id="active-token-icon" class="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center overflow-hidden border border-white/10 shadow-inner">
+                                 <i data-lucide="user" class="w-4 h-4 text-zinc-700"></i>
+                            </div>
+                            <button id="tokens-section-toggle" onclick="toggleCollapsibleSection('tokens-section-body', 'tokens-section-toggle')" class="w-6 h-6 rounded-full border border-white/15 text-zinc-400 hover:text-gold hover:border-gold/40 text-sm leading-none">+</button>
+                        </div>
+                    </div>
+                    <div id="tokens-section-body" class="hidden">
+                        <div id="color-palette" class="grid grid-cols-5 gap-2 mb-4"></div>
+                        <label class="flex items-center justify-center gap-2 bg-white/5 hover:bg-gold/20 p-2 rounded-lg cursor-pointer transition-all text-[9px] font-bold uppercase tracking-widest border border-white/5">
+                            <i data-lucide="image" class="w-3 h-3"></i> Mudar Ícone
+                            <input type="file" id="token-file-input" class="hidden" accept="image/*">
+                        </label>
+                    </div>
+                </div>
 
-      const playPromise = adventureAudio.play();
-      if (playPromise && typeof playPromise.catch === "function") {
-        playPromise.catch((error) => {
-          console.error("Nao foi possivel reproduzir o audio:", error);
-        });
-      }
-    }
+                <!-- Grid -->
+                <div class="hud-glass p-6 rounded-[2rem]">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-display text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Alinhamento Grid</h3>
+                        <button id="grid-section-toggle" onclick="toggleCollapsibleSection('grid-section-body', 'grid-section-toggle')" class="w-6 h-6 rounded-full border border-white/15 text-zinc-400 hover:text-gold hover:border-gold/40 text-sm leading-none">+</button>
+                    </div>
+                    <div id="grid-section-body" class="space-y-4 hidden">
+                        <div class="text-[9px] uppercase tracking-widest text-zinc-500">Tamanho do Hex</div>
+                        <input type="range" id="input-scale" min="10" max="100" value="30" class="w-full accent-gold">
+                        <div class="w-full">
+                            <div class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Offset X</div>
+                            <input type="range" id="input-ox" min="-500" max="500" value="0" class="w-full">
+                        </div>
+                        <div class="w-full">
+                            <div class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Offset Y</div>
+                            <input type="range" id="input-oy" min="-500" max="500" value="0" class="w-full">
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div>
+                                <div class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Cor</div>
+                                <input type="color" id="input-grid-color" value="#ffffff" class="w-10 h-10 rounded-md bg-transparent border border-white/10 p-0">
+                            </div>
+                            <div class="w-full">
+                                <div class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Opacidade</div>
+                                <input type="range" id="input-grid-opacity" min="0.05" max="1" step="0.05" value="0.15" class="w-full accent-gold">
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    startButton.addEventListener("click", startAdventure, { once: true });
-    mapButton.addEventListener("click", () => {
-      mapOverlay.classList.add("visible");
-      mapOverlay.setAttribute("aria-hidden", "false");
-    });
-    closeMapButton.addEventListener("click", () => {
-      mapOverlay.classList.remove("visible");
-      mapOverlay.setAttribute("aria-hidden", "true");
-    });
+                <!-- Mapa -->
+                <div id="map-transform-panel" class="hud-glass p-6 rounded-[2rem] hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-display text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Alinhamento Mapa</h3>
+                        <button id="map-section-toggle" onclick="toggleCollapsibleSection('map-section-body', 'map-section-toggle')" class="w-6 h-6 rounded-full border border-white/15 text-zinc-400 hover:text-gold hover:border-gold/40 text-sm leading-none">+</button>
+                    </div>
+                    <div id="map-section-body" class="space-y-4 hidden">
+                        <div class="text-[9px] uppercase tracking-widest text-zinc-500">Zoom do Mapa</div>
+                        <input type="range" id="input-map-scale" min="25" max="250" value="100" class="w-full accent-gold">
+                        <div class="w-full">
+                            <div class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Posição X</div>
+                            <input type="range" id="input-map-x" min="-800" max="800" value="0" class="w-full">
+                        </div>
+                        <div class="w-full">
+                            <div class="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">Posição Y</div>
+                            <input type="range" id="input-map-y" min="-800" max="800" value="0" class="w-full">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
 
-    appFrame.addEventListener("wheel", (event) => {
-      event.preventDefault();
-      const element = getActiveZoomElement();
-      const currentZoom = zoomByElement.get(element) || 1;
-      const delta = event.deltaY < 0 ? 0.12 : -0.12;
-      applyZoom(element, currentZoom + delta);
-    }, { passive: false });
-  </script>
+    <!-- TEMPLATE DE INSERÇÃO -->
+    <template id="insert-bar-template">
+        <div class="group flex flex-col items-center py-6 insert-bar">
+            <div class="w-px h-8 bg-gradient-to-b from-transparent via-white/10 to-transparent"></div>
+            <div class="relative">
+                <button class="add-btn flex items-center gap-3 bg-zinc-900 border border-white/10 hover:border-gold/50 text-zinc-500 hover:text-gold px-6 py-2.5 rounded-full transition-all text-[10px] font-display font-bold uppercase tracking-[0.2em] shadow-2xl active:scale-95">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Adicionar Elemento
+                </button>
+                <div class="menu-popup hidden absolute left-1/2 -translate-x-1/2 top-full mt-4 bg-zinc-950/95 backdrop-blur-2xl border border-gold/20 rounded-[2rem] p-3 shadow-2xl z-[100] flex flex-col w-56 ring-1 ring-gold/10">
+                    <button data-type="map" class="flex items-center gap-4 p-4 hover:bg-white/5 rounded-2xl text-xs font-bold transition-all text-zinc-400 hover:text-gold">
+                        <i data-lucide="map" class="w-5 h-5 text-gold"></i> Mapa de Batalha
+                    </button>
+                    <button data-type="image" class="flex items-center gap-4 p-4 hover:bg-white/5 rounded-2xl text-xs font-bold transition-all text-zinc-400 hover:text-orange-500">
+                        <i data-lucide="image" class="w-5 h-5"></i> Ilustração / Visual
+                    </button>
+                    <button data-type="text" class="flex items-center gap-4 p-4 hover:bg-white/5 rounded-2xl text-xs font-bold transition-all text-zinc-400 hover:text-purple-500">
+                        <i data-lucide="scroll" class="w-5 h-5"></i> Texto Narrativo
+                    </button>
+                    <button data-type="audio" class="flex items-center gap-4 p-4 hover:bg-white/5 rounded-2xl text-xs font-bold transition-all text-zinc-400 hover:text-green-500">
+                        <i data-lucide="music" class="w-5 h-5"></i> Som Ambiente
+                    </button>
+                </div>
+            </div>
+            <div class="w-px h-8 bg-gradient-to-t from-transparent via-white/10 to-transparent"></div>
+        </div>
+    </template>
+
+    <script>
+        let state = {
+            view: 'home',
+            elements: [], 
+            libraryAdventures: [],
+            selectedElementId: null,
+            selectedColor: '#3b82f6',
+            tokenIcon: null,
+            maximizedId: null,
+            presentationView: { zoom: 1, x: 0, y: 0 }
+        };
+
+        function getElementPresentationView(el) {
+            return el?.data?.presentationView || { zoom: 1, x: 0, y: 0 };
+        }
+
+        const COLORS = [
+            { name: 'H', value: '#3b82f6' }, { name: 'I', value: '#ef4444' },
+            { name: 'E', value: '#a855f7' }, { name: 'B', value: '#f97316' },
+            { name: 'T', value: '#eab308' }, { name: 'N', value: '#22c55e' },
+            { name: 'P', value: '#64748b' }, { name: 'A', value: '#06b6d4' },
+            { name: 'X', value: '#fbbf24' }, { name: 'V', value: '#18181b' }
+        ];
+
+        const SQRT_3 = Math.sqrt(3);
+
+        window.onload = () => {
+            initPalette();
+            initGlobalEvents();
+            renderHomeGrid();
+            lucide.createIcons();
+        };
+
+        function initPalette() {
+            const container = document.getElementById('color-palette');
+            if(!container) return;
+            COLORS.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = `w-full aspect-square rounded-lg transition-all border-2 border-transparent hover:scale-110`;
+                btn.style.backgroundColor = c.value;
+                btn.onclick = () => {
+                    state.selectedColor = c.value;
+                    document.querySelectorAll('#color-palette button').forEach(b => b.classList.remove('border-white'));
+                    btn.classList.add('border-white');
+                };
+                container.appendChild(btn);
+            });
+            if(container.children.length > 0) container.children[0].classList.add('border-white');
+        }
+
+        function toggleCollapsibleSection(bodyId, toggleId) {
+            const body = document.getElementById(bodyId);
+            const toggle = document.getElementById(toggleId);
+            if (!body || !toggle) return;
+            const willOpen = body.classList.contains('hidden');
+            body.classList.toggle('hidden');
+            toggle.textContent = willOpen ? '-' : '+';
+        }
+
+        function initGlobalEvents() {
+            const tokenInput = document.getElementById('token-file-input');
+            if(tokenInput) {
+                tokenInput.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (f) => {
+                            state.tokenIcon = f.target.result;
+                            const ic = document.getElementById('active-token-icon');
+                            if(ic) ic.innerHTML = `<img src="${state.tokenIcon}" class="w-full h-full object-cover">`;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+            }
+
+            const updateActiveMap = () => {
+                if (!state.selectedElementId || state.maximizedId) return;
+                const el = state.elements.find(e => e.id === state.selectedElementId);
+                if (el && el.type === 'map') {
+                    const sIn = document.getElementById('input-scale');
+                    const oxIn = document.getElementById('input-ox');
+                    const oyIn = document.getElementById('input-oy');
+                    const gcIn = document.getElementById('input-grid-color');
+                    const goIn = document.getElementById('input-grid-opacity');
+                    if(sIn) el.data.gridSettings.scale = parseInt(sIn.value);
+                    if(oxIn) el.data.gridSettings.ox = parseInt(oxIn.value);
+                    if(oyIn) el.data.gridSettings.oy = parseInt(oyIn.value);
+                    if(gcIn) el.data.gridSettings.color = gcIn.value;
+                    if(goIn) el.data.gridSettings.opacity = parseFloat(goIn.value);
+
+                    const mapScaleIn = document.getElementById('input-map-scale');
+                    const mapXIn = document.getElementById('input-map-x');
+                    const mapYIn = document.getElementById('input-map-y');
+                    if (mapScaleIn) el.data.scale = parseInt(mapScaleIn.value);
+                    if (mapXIn) el.data.panX = parseInt(mapXIn.value);
+                    if (mapYIn) el.data.panY = parseInt(mapYIn.value);
+                    const wrapper = document.getElementById(`wrapper-${el.id}`);
+                    if (wrapper) {
+                        const mapScale = (el.data.scale || 100) / 100;
+                        wrapper.style.transform = `translate(${el.data.panX || 0}px, ${el.data.panY || 0}px) scale(${mapScale})`;
+                    }
+                    renderElement(el.id);
+                }
+            };
+
+            const isInput = (id) => document.getElementById(id);
+            if (isInput('input-scale')) isInput('input-scale').oninput = updateActiveMap;
+            if (isInput('input-ox')) isInput('input-ox').oninput = updateActiveMap;
+            if (isInput('input-oy')) isInput('input-oy').oninput = updateActiveMap;
+            if (isInput('input-grid-color')) isInput('input-grid-color').oninput = updateActiveMap;
+            if (isInput('input-grid-opacity')) isInput('input-grid-opacity').oninput = updateActiveMap;
+            if (isInput('input-map-scale')) isInput('input-map-scale').oninput = updateActiveMap;
+            if (isInput('input-map-x')) isInput('input-map-x').oninput = updateActiveMap;
+            if (isInput('input-map-y')) isInput('input-map-y').oninput = updateActiveMap;
+
+            const jsonInput = document.getElementById('json-load-input');
+            if(jsonInput) {
+                jsonInput.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (f) => {
+                            try {
+                                importAdventure(JSON.parse(f.target.result));
+                            } catch {
+                                showNotification("Não foi possível ler o JSON.");
+                            }
+                        };
+                        reader.readAsText(file);
+                    }
+                };
+            }
+
+            window.onclick = (e) => {
+                if (!e.target.closest('.relative')) {
+                    document.querySelectorAll('.menu-popup').forEach(m => m.classList.add('hidden'));
+                }
+            };
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && state.maximizedId) {
+                    toggleMaximize(state.maximizedId);
+                    return;
+                }
+                if (state.maximizedId && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
+                    e.preventDefault();
+                    navigateMaximized(e.key === 'ArrowRight' ? 1 : -1);
+                }
+            });
+        }
+
+        function showView(viewName) {
+            state.view = viewName;
+            document.getElementById('view-home').classList.toggle('hidden', viewName !== 'home');
+            document.getElementById('view-editor').classList.toggle('hidden', viewName !== 'editor');
+            document.getElementById('nav-actions').classList.toggle('hidden', viewName === 'home');
+            if (viewName === 'home') renderHomeGrid();
+        }
+
+        function createNewAdventure() {
+            state.elements = [];
+            state.adventureTitle = '';
+            document.getElementById('adventure-title').value = '';
+            renderEditor();
+            showView('editor');
+        }
+
+        function renderEditor() {
+            const container = document.getElementById('editor-blocks');
+            if(!container) return;
+            container.innerHTML = '';
+            if (!state.maximizedId) container.appendChild(createInsertBar(0));
+            state.elements.forEach((el, index) => {
+                container.appendChild(createBlockElement(el));
+                if (!state.maximizedId) container.appendChild(createInsertBar(index + 1));
+            });
+            lucide.createIcons();
+            updateContextualPanels();
+        }
+
+        function createInsertBar(index) {
+            const template = document.getElementById('insert-bar-template');
+            const clone = template.content.cloneNode(true);
+            const btn = clone.querySelector('.add-btn');
+            const menu = clone.querySelector('.menu-popup');
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.menu-popup').forEach(m => m !== menu && m.classList.add('hidden'));
+                menu.classList.toggle('hidden');
+            };
+            menu.querySelectorAll('button').forEach(opt => {
+                opt.onclick = () => { addElement(opt.dataset.type, index); menu.classList.add('hidden'); };
+            });
+            return clone;
+        }
+
+        function addElement(type, index) {
+            const id = 'el-' + Date.now();
+            const newEl = {
+                id, type, data: { url: null, audioUrl: null, title: type === 'map' ? 'Novo Mapa' : (type === 'audio' ? 'Ambiente' : (type === 'text' ? 'Crônica' : 'Cena Visual')), scale: type === 'text' ? 1 : 100, panX: 0, panY: 0, content: '', tokens: [], gridSettings: { scale: 30, ox: 0, oy: 0, color: '#ffffff', opacity: 0.15 }, presentationView: { zoom: 1, x: 0, y: 0 } }
+            };
+            state.elements.splice(index, 0, newEl);
+            state.selectedElementId = id;
+            renderEditor();
+        }
+
+        function createBlockElement(el) {
+            const div = document.createElement('div');
+            div.id = `block-${el.id}`;
+            const isMax = state.maximizedId === el.id;
+            const isAct = state.selectedElementId === el.id && !isMax;
+            div.className = `block-card rounded-[2.5rem] shadow-2xl ${isAct ? 'active' : ''} ${isMax ? 'maximized-element' : 'mb-2'}`;
+            
+            div.onclick = (e) => {
+                if (state.maximizedId || e.target.closest('button') || e.target.closest('input') || e.target.closest('textarea')) return;
+                state.selectedElementId = el.id;
+                renderEditor();
+            };
+
+            const contentHtml = el.type === 'map' ? renderMapBlock(el, isMax) : el.type === 'image' ? renderImageBlock(el, isMax) : el.type === 'text' ? renderTextBlock(el, isMax) : renderAudioBlock(el);
+
+            div.innerHTML = `
+                <div class="edit-ui flex items-center justify-between p-6 bg-white/5 border-b border-white/5 rounded-t-[2rem]">
+                    <div class="flex items-center gap-4">
+                        <div class="p-3 bg-zinc-900 rounded-xl shadow-inner border border-gold/20">
+                            <i data-lucide="${el.type === 'map' ? 'map' : (el.type === 'audio' ? 'music' : (el.type === 'text' ? 'scroll' : 'image'))}" class="w-4 h-4 text-gold"></i>
+                        </div>
+                        <input type="text" value="${el.data.title}" onchange="updateElData('${el.id}', 'title', this.value)" 
+                            class="bg-transparent border-none font-display text-xs font-bold uppercase tracking-[0.2em] outline-none text-gold focus:text-zinc-100 transition-colors w-48">
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="toggleMaximize('${el.id}')" class="w-10 h-10 flex items-center justify-center bg-zinc-900 hover:bg-gold/10 text-gold transition-all border border-gold/20 rounded-full" title="Maximizar">
+                            <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="removeElement('${el.id}')" class="w-10 h-10 flex items-center justify-center bg-zinc-900 hover:bg-red-950/40 text-zinc-500 hover:text-red-500 rounded-full transition-all border border-white/5">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="content-container p-6 relative flex flex-col items-center">
+                    ${contentHtml}
+                    ${isMax ? `<button onclick="toggleMaximize('${el.id}')" class="fixed top-8 right-8 z-[10005] bg-black/40 hover:bg-gold/30 backdrop-blur-md text-white p-5 rounded-full transition-all border border-gold/30 shadow-2xl active:scale-95"><i data-lucide="x" class="w-6 h-6"></i></button>` : ''}
+                    ${isMax ? renderMaxNavigation() : ''}
+                    ${isMax ? renderPresentationHUD(el) : ''}
+                </div>
+                ${(el.type === 'map' || el.type === 'image' || el.type === 'text') ? renderAudioFooter(el, isMax) : ''}
+            `;
+            return div;
+        }
+
+        function renderMaxNavigation() {
+            if (!state.maximizedId || state.elements.length < 2) return '';
+            const currentIndex = state.elements.findIndex(e => e.id === state.maximizedId);
+            const positionLabel = `${currentIndex === -1 ? 1 : currentIndex + 1} / ${state.elements.length}`;
+            return `
+                <button onclick="navigateMaximized(-1)" class="fixed left-6 top-1/2 -translate-y-1/2 z-[10015] bg-black/55 hover:bg-gold text-gold hover:text-black w-14 h-14 rounded-full border border-gold/40 shadow-2xl transition-all active:scale-95 backdrop-blur-md" title="Componente anterior">
+                    <i data-lucide="chevron-left" class="w-7 h-7 mx-auto"></i>
+                </button>
+                <div class="fixed top-6 left-1/2 -translate-x-1/2 z-[10015] bg-black/55 text-gold border border-gold/35 rounded-full px-5 py-2 text-[10px] tracking-[0.2em] font-black uppercase backdrop-blur-md">
+                    ${positionLabel}
+                </div>
+                <button onclick="navigateMaximized(1)" class="fixed right-6 top-1/2 -translate-y-1/2 z-[10015] bg-black/55 hover:bg-gold text-gold hover:text-black w-14 h-14 rounded-full border border-gold/40 shadow-2xl transition-all active:scale-95 backdrop-blur-md" title="Próximo componente">
+                    <i data-lucide="chevron-right" class="w-7 h-7 mx-auto"></i>
+                </button>
+            `;
+        }
+
+        function navigateMaximized(direction) {
+            if (!state.maximizedId || state.elements.length < 2) return;
+            const currentIndex = state.elements.findIndex(e => e.id === state.maximizedId);
+            if (currentIndex === -1) return;
+            const nextIndex = (currentIndex + direction + state.elements.length) % state.elements.length;
+            const nextEl = state.elements[nextIndex];
+            state.maximizedId = nextEl.id;
+            state.selectedElementId = nextEl.id;
+            state.presentationView = { ...getElementPresentationView(nextEl) };
+            renderEditor();
+            if (nextEl.type === 'map') setTimeout(() => renderElement(nextEl.id), 100);
+        }
+
+        function renderPresentationHUD(el) {
+            return `
+                <div class="max-control-zone z-[10008] bottom-2 left-1/2 -translate-x-1/2 w-[680px] max-w-[92vw] h-24">
+                    <div class="max-overlay-panel hud-glass absolute bottom-0 left-1/2 -translate-x-1/2 px-10 py-5 rounded-[3rem] flex items-center gap-10 animate-in slide-in-from-bottom-10">
+                        <div class="flex flex-col gap-2 w-48">
+                            <div class="flex justify-between text-[8px] font-black text-gold uppercase tracking-widest"><span>Zoom Câmera</span><span id="hud-val-zoom">${Math.round(state.presentationView.zoom * 100)}%</span></div>
+                            <input type="range" min="0.1" max="5" step="0.01" value="${state.presentationView.zoom}" oninput="updatePresentationView('${el.id}', 'zoom', this.value)" class="accent-gold">
+                        </div>
+                        <div class="flex flex-col gap-2 w-40">
+                            <div class="flex justify-between text-[8px] font-black text-zinc-500 uppercase tracking-widest"><span>Posição X / Y</span></div>
+                            <div class="flex gap-4">
+                                <input type="range" min="-2000" max="2000" value="${state.presentationView.x}" oninput="updatePresentationView('${el.id}', 'x', this.value)" class="accent-zinc-700">
+                                <input type="range" min="-2000" max="2000" value="${state.presentationView.y}" oninput="updatePresentationView('${el.id}', 'y', this.value)" class="accent-zinc-700">
+                            </div>
+                        </div>
+                        <button onclick="resetPresentationView('${el.id}')" class="w-10 h-10 -translate-y-4 -translate-x-[10px] flex items-center justify-center hover:bg-white/5 rounded-full text-zinc-500 hover:text-gold transition-all"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updatePresentationView(id, prop, val) {
+            state.presentationView[prop] = parseFloat(val);
+            const el = state.elements.find(e => e.id === id);
+            if (el) el.data.presentationView = { ...state.presentationView };
+            const zoomLabel = document.getElementById('hud-val-zoom');
+            if (prop === 'zoom' && zoomLabel) zoomLabel.innerText = Math.round(val * 100) + '%';
+            const wrapper = document.getElementById(`wrapper-${id}`);
+            if (wrapper) wrapper.style.transform = `translate(${state.presentationView.x}px, ${state.presentationView.y}px) scale(${state.presentationView.zoom})`;
+        }
+
+        function resetPresentationView(id) {
+            state.presentationView = { zoom: 1, x: 0, y: 0 };
+            const el = state.elements.find(e => e.id === id);
+            if (el) el.data.presentationView = { ...state.presentationView };
+            renderEditor();
+            if(el && el.type === 'map') setTimeout(() => renderElement(id), 50);
+        }
+
+        function renderAudioFooter(el, isMax) {
+            return `
+                <div class="edit-ui px-6 pb-10 pt-2">
+                    <div class="bg-zinc-950/50 rounded-[2rem] p-5 border border-white/5 flex items-center gap-8 shadow-inner">
+                        <div class="flex items-center gap-3 text-[10px] font-display font-black text-gold uppercase tracking-[0.2em] min-w-[140px]">
+                            <i data-lucide="music" class="w-4 h-4"></i> Trilha Sonora
+                        </div>
+                        <div class="flex-1">
+                            ${el.data.audioUrl ? `<audio controls class="w-full h-8 opacity-60"><source src="${el.data.audioUrl}"></audio>` : ''}
+                        </div>
+                        <label class="bg-zinc-900 hover:bg-gold/10 w-12 h-12 flex items-center justify-center rounded-2xl cursor-pointer transition-all border border-gold/20">
+                            <i data-lucide="plus" class="w-5 h-5 text-gold"></i>
+                            <input type="file" class="hidden" accept="audio/*" onchange="uploadAudioToElement('${el.id}', this)">
+                        </label>
+                        ${el.data.audioUrl ? `<button onclick="updateElData('${el.id}', 'audioUrl', null); renderEditor();" class="text-zinc-600 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-5 h-5"></i></button>` : ''}
+                    </div>
+                </div>
+                ${isMax && el.data.audioUrl ? `<div class="max-control-zone z-[10020] top-3 left-1/2 -translate-x-1/2 w-72 h-24"><div class="max-overlay-panel absolute top-0 left-1/2 -translate-x-1/2 w-72 animate-in fade-in zoom-in duration-700 backdrop-blur-md bg-black/40 p-4 rounded-3xl border border-gold/20 shadow-2xl"><audio controls class="w-full h-10 opacity-85"><source src="${el.data.audioUrl}"></audio></div></div>` : ''}
+            `;
+        }
+
+        function renderMapBlock(el, isMax) {
+            if (!el.data.url) return `<div class="py-24 flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-[2.5rem] w-full bg-white/5"><label class="bg-gold text-black px-10 py-5 rounded-full cursor-pointer text-[10px] font-display font-black uppercase tracking-widest active:scale-95 shadow-xl hover:bg-gold-bright transition-all">Desbravar Mapa<input type="file" class="hidden" accept="image/*" onchange="uploadToElement('${el.id}', this)"></label></div>`;
+            const mapScale = (el.data.scale || 100) / 100;
+            const transform = isMax ? `transform: translate(${state.presentationView.x}px, ${state.presentationView.y}px) scale(${state.presentationView.zoom})` : `transform: translate(${el.data.panX || 0}px, ${el.data.panY || 0}px) scale(${mapScale})`;
+            return `<div class="relative bg-black rounded-none overflow-hidden w-full ring-1 ring-white/10 ${isMax ? 'h-[100svh]' : 'h-[650px]'} flex items-center justify-center shadow-inner"><div class="map-viewport relative h-full w-full scrollbar-hide flex justify-center items-start" id="viewport-${el.id}"><div class="relative inline-block transition-transform duration-75" id="wrapper-${el.id}" style="${transform}"><img src="${el.data.url}" class="block max-w-none opacity-80 select-none pointer-events-none" id="img-${el.id}"><svg class="absolute inset-0 w-full h-full hex-grid-svg" id="svg-${el.id}" onclick="handleMapClick(event, '${el.id}')"></svg></div></div></div>`;
+        }
+
+        function renderImageBlock(el, isMax) {
+            if (!el.data.url) return `<div class="py-24 flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-[2.5rem] w-full bg-white/5"><label class="bg-gold text-black px-10 py-5 rounded-full cursor-pointer text-[10px] font-display font-black uppercase tracking-widest active:scale-95 shadow-xl hover:bg-gold-bright transition-all">Subir Ilustração Épica<input type="file" class="hidden" accept="image/*" onchange="uploadToElement('${el.id}', this)"></label></div>`;
+            const transform = isMax ? `transform: translate(${state.presentationView.x}px, ${state.presentationView.y}px) scale(${state.presentationView.zoom})` : `transform: translate(${el.data.panX}px, ${el.data.panY}px)`;
+            return `<div class="w-full ${isMax ? 'h-full' : 'min-h-[500px]'} flex flex-col items-center justify-center"><div class="edit-ui flex items-center gap-6 w-full max-w-md bg-zinc-900/50 backdrop-blur-md p-5 rounded-3xl border border-white/10 mb-10 shadow-2xl"><i data-lucide="expand" class="w-4 h-4 text-gold"></i><input type="range" min="5" max="100" value="${el.data.scale || 100}" oninput="updateImageScale('${el.id}', this.value)" class="flex-1 accent-gold"></div><div class="overflow-hidden flex items-center justify-center w-full h-full"><img src="${el.data.url}" id="wrapper-${el.id}" class="rounded-none shadow-2xl border border-white/5 transition-all duration-75" style="width: ${el.data.scale || 100}%; max-width: none; ${transform}"></div></div>`;
+        }
+
+        function renderTextBlock(el, isMax) {
+            if (isMax) {
+                const tr = `transform: translate(${state.presentationView.x}px, ${state.presentationView.y}px) scale(${state.presentationView.zoom})`;
+                return `<div id="wrapper-${el.id}" class="max-w-4xl px-20 text-center font-narrative transition-transform duration-75" style="${tr}"><p class="text-4xl md:text-6xl font-medium text-zinc-100 leading-relaxed italic whitespace-pre-wrap drop-shadow-2xl">${el.data.content || 'Aguardando sua narrativa...'}</p></div>`;
+            }
+            return `<div class="w-full"><textarea oninput="updateElData('${el.id}', 'content', this.value)" placeholder="Escreva aqui a descrição épica do cenário ou falas de NPCs..." class="w-full h-64 bg-zinc-950/40 border border-white/10 rounded-[2.5rem] p-10 text-zinc-300 font-narrative text-2xl focus:border-gold/50 outline-none transition-all resize-none shadow-inner">${el.data.content || ''}</textarea></div>`;
+        }
+
+        function updateImageScale(id, val) {
+            const el = state.elements.find(e => e.id === id); if (el) el.data.scale = parseInt(val);
+            const img = document.getElementById(`wrapper-${id}`);
+            if (img) img.style.width = val + '%';
+        }
+
+        function updateMapTransform(id, prop, val) {
+            const el = state.elements.find(e => e.id === id);
+            if (!el || el.type !== 'map') return;
+            const parsed = parseInt(val);
+            if (prop === 'scale') el.data.scale = parsed;
+            if (prop === 'panX') el.data.panX = parsed;
+            if (prop === 'panY') el.data.panY = parsed;
+            const wrapper = document.getElementById(`wrapper-${id}`);
+            if (wrapper && !state.maximizedId) {
+                const mapScale = (el.data.scale || 100) / 100;
+                wrapper.style.transform = `translate(${el.data.panX || 0}px, ${el.data.panY || 0}px) scale(${mapScale})`;
+            }
+        }
+
+        function renderAudioBlock(el) {
+            return `<div class="flex flex-col gap-10 bg-zinc-950/50 p-16 rounded-[4rem] border border-white/5 w-full max-w-3xl mx-auto shadow-2xl backdrop-blur-md"><div class="flex items-center gap-8"><div class="w-28 h-28 bg-gradient-to-tr from-green-600/20 to-gold/10 rounded-[2.5rem] flex items-center justify-center border border-white/5 shadow-lg"><i data-lucide="music-4" class="w-12 h-12 text-gold animate-pulse"></i></div><div><h4 class="font-display text-3xl font-black uppercase tracking-tighter italic text-gold">Sinfonia da Campanha</h4><p class="text-zinc-500 text-sm font-medium italic">Som ambiente dedicado a esta cena.</p></div></div><div class="flex-1">${el.data.url ? `<audio controls class="w-full h-16 rounded-full bg-zinc-900 border border-white/5 shadow-2xl opacity-80"><source src="${el.data.url}"></audio>` : `<label class="flex items-center justify-center border-2 border-dashed border-white/10 p-20 rounded-[3rem] cursor-pointer hover:bg-white/5 transition-all font-display text-zinc-600 uppercase tracking-widest text-[11px] active:scale-95 shadow-inner">Carregar Ficheiro MP3 <input type="file" class="hidden" accept="audio/*" onchange="uploadToElement('${el.id}', this)"></label>`}</div></div>`;
+        }
+
+        function uploadToElement(id, input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (f) => {
+                    const el = state.elements.find(e => e.id === id); el.data.url = f.target.result; renderEditor();
+                    if (el.type === 'map') setTimeout(() => renderElement(id), 150);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function uploadAudioToElement(id, input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (f) => {
+                    const el = state.elements.find(e => e.id === id); el.data.audioUrl = f.target.result; renderEditor();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function updateElData(id, key, val) { const el = state.elements.find(e => e.id === id); if (el) el.data[key] = val; }
+
+        function toggleMaximize(id) {
+            const header = document.getElementById('main-header');
+            if (state.maximizedId === id) { state.maximizedId = null; header.classList.remove('hidden'); document.body.style.overflow = 'auto'; state.presentationView = { zoom: 1, x: 0, y: 0 }; }
+            else {
+                state.maximizedId = id;
+                header.classList.add('hidden');
+                document.body.style.overflow = 'hidden';
+                const el = state.elements.find(e => e.id === id);
+                state.presentationView = { ...getElementPresentationView(el) };
+            }
+            renderEditor();
+            const el = state.elements.find(e => e.id === id);
+            if(el && el.type === 'map') setTimeout(() => renderElement(id), 100);
+        }
+
+        function removeElement(id) {
+            state.elements = state.elements.filter(e => e.id !== id);
+            if (state.selectedElementId === id) state.selectedElementId = null;
+            renderEditor();
+        }
+
+        function updateContextualPanels() {
+            const panel = document.getElementById('contextual-panels');
+            const mapPanel = document.getElementById('map-transform-panel');
+            const activeEl = state.elements.find(e => e.id === state.selectedElementId);
+            if (activeEl && activeEl.type === 'map' && activeEl.data.url && !state.maximizedId) {
+                panel.classList.remove('hidden');
+                const sIn = document.getElementById('input-scale');
+                const oxIn = document.getElementById('input-ox');
+                const oyIn = document.getElementById('input-oy');
+                const gcIn = document.getElementById('input-grid-color');
+                const goIn = document.getElementById('input-grid-opacity');
+                if(sIn) sIn.value = activeEl.data.gridSettings.scale;
+                if(oxIn) oxIn.value = activeEl.data.gridSettings.ox;
+                if(oyIn) oyIn.value = activeEl.data.gridSettings.oy;
+                if(gcIn) gcIn.value = activeEl.data.gridSettings.color || '#ffffff';
+                if(goIn) goIn.value = activeEl.data.gridSettings.opacity ?? 0.15;
+                if (mapPanel) mapPanel.classList.remove('hidden');
+                const mapScaleIn = document.getElementById('input-map-scale');
+                const mapXIn = document.getElementById('input-map-x');
+                const mapYIn = document.getElementById('input-map-y');
+                if (mapScaleIn) mapScaleIn.value = activeEl.data.scale || 100;
+                if (mapXIn) mapXIn.value = activeEl.data.panX || 0;
+                if (mapYIn) mapYIn.value = activeEl.data.panY || 0;
+                renderElement(activeEl.id);
+            } else {
+                panel.classList.add('hidden');
+                if (mapPanel) mapPanel.classList.add('hidden');
+            }
+        }
+
+        function renderElement(id) {
+            const el = state.elements.find(e => e.id === id);
+            if (!el || el.type !== 'map' || !el.data.url) return;
+            const svg = document.getElementById(`svg-${id}`);
+            const img = document.getElementById(`img-${id}`);
+            if (!svg || !img) return;
+            svg.innerHTML = '';
+            const s = el.data.gridSettings;
+            const rows = Math.ceil(img.naturalHeight / (s.scale * 1.2)) + 20;
+            const cols = Math.ceil(img.naturalWidth / (s.scale * 1.2)) + 20;
+            let g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            for (let r = -10; r <= rows; r++) {
+                const qOffset = Math.floor(r / 2);
+                for (let q = -10 - qOffset; q <= cols - qOffset; q++) g.appendChild(createHexPath(q, r, "none", hexToRgba(s.color || '#ffffff', s.opacity ?? 0.15), s));
+            }
+            svg.appendChild(g);
+            let tGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            el.data.tokens.forEach(t => {
+                const { x, y } = hexToPixel(t.q, t.r, s);
+                tGroup.appendChild(createHexPath(t.q, t.r, t.color, "white", s, 0.85, true));
+                if (t.icon) {
+                    const is = s.scale * 1.4;
+                    const icon = document.createElementNS("http://www.w3.org/2000/svg", "image");
+                    icon.setAttributeNS(null, "href", t.icon);
+                    icon.setAttributeNS(null, "x", x - is / 2); icon.setAttributeNS(null, "y", y - is / 2);
+                    icon.setAttributeNS(null, "width", is); icon.setAttributeNS(null, "height", is);
+                    tGroup.appendChild(icon);
+                }
+            });
+            svg.appendChild(tGroup);
+        }
+
+        function handleMapClick(e, id) {
+            if (state.maximizedId) return;
+            const el = state.elements.find(e => e.id === id);
+            if (!el || el.type !== 'map') return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const img = document.getElementById(`img-${id}`);
+            const x = (e.clientX - rect.left) * (img.naturalWidth / rect.width);
+            const y = (e.clientY - rect.top) * (img.naturalHeight / rect.height);
+            const { q, r } = pixelToHex(x, y, el.data.gridSettings);
+            const idx = el.data.tokens.findIndex(t => t.q === q && t.r === r);
+            if (idx !== -1) {
+                if (el.data.tokens[idx].color === state.selectedColor && el.data.tokens[idx].icon === state.tokenIcon) el.data.tokens.splice(idx, 1);
+                else { el.data.tokens[idx].color = state.selectedColor; el.data.tokens[idx].icon = state.tokenIcon; }
+            } else el.data.tokens.push({ q, r, color: state.selectedColor, icon: state.tokenIcon });
+            renderElement(id);
+        }
+
+        function hexToPixel(q, r, s) { return { x: s.scale * (SQRT_3 * q + SQRT_3 / 2 * r) + s.ox, y: s.scale * (3 / 2 * r) + s.oy }; }
+        function hexToRgba(hex, alpha) {
+            const c = (hex || '#ffffff').replace('#', '');
+            const v = c.length === 3 ? c.split('').map(ch => ch + ch).join('') : c;
+            const n = parseInt(v, 16);
+            const r = (n >> 16) & 255;
+            const g = (n >> 8) & 255;
+            const b = n & 255;
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+        function pixelToHex(x, y, s) { 
+            const adjX = x - s.ox, adjY = y - s.oy;
+            const q = (SQRT_3 / 3 * adjX - 1 / 3 * adjY) / s.scale, r = (2 / 3 * adjY) / s.scale;
+            return hexRound(q, r);
+        }
+        function hexRound(q, r) {
+            let x = q, z = r, y = -x - z, rx = Math.round(x), ry = Math.round(y), rz = Math.round(z);
+            const xd = Math.abs(rx - x), yd = Math.abs(ry - y), zd = Math.abs(rz - z);
+            if (xd > yd && xd > zd) rx = -ry - rz; else if (yd > zd) ry = -rx - rz; else rz = -rx - ry;
+            return { q: rx, r: rz };
+        }
+        function createHexPath(q, r, f, str, s, op = 1, isT = false) {
+            const { x, y } = hexToPixel(q, r, s); const pts = [];
+            for (let i = 0; i < 6; i++) { const rad = (Math.PI / 180) * (60 * i - 30); pts.push(`${x + s.scale * Math.cos(rad)},${y + s.scale * Math.sin(rad)}`); }
+            const p = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+            p.setAttribute("points", pts.join(' ')); p.setAttribute("fill", f); p.setAttribute("stroke", str);
+            p.setAttribute("stroke-width", isT ? "2" : "1"); p.setAttribute("fill-opacity", op); p.setAttribute("class", "pointer-events-none");
+            return p;
+        }
+
+        function exportAdventure() {
+            const elements = state.elements.map(el => ({
+                ...el,
+                data: {
+                    ...el.data,
+                    presentationView: el.data?.presentationView || { zoom: 1, x: 0, y: 0 }
+                }
+            }));
+            const data = { title: document.getElementById('adventure-title').value || 'Nova Crônica', elements };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `${data.title.toLowerCase().replace(/\s+/g, '-')}.json`; a.click();
+            showNotification("Sua Crônica foi salva!");
+        }
+
+        function importAdventure(data) {
+            if (!data || !Array.isArray(data.elements)) {
+                showNotification("Arquivo JSON inválido.");
+                return;
+            }
+
+            const adventure = {
+                id: `adv-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+                title: data.title || "Crônica sem título",
+                elements: data.elements.map(el => ({
+                    ...el,
+                    data: {
+                        ...el.data,
+                        presentationView: el.data?.presentationView || { zoom: 1, x: 0, y: 0 }
+                    }
+                }))
+            };
+
+            state.libraryAdventures.unshift(adventure);
+            const jsonInput = document.getElementById('json-load-input');
+            if (jsonInput) jsonInput.value = '';
+            showView('home');
+            showNotification("Crônica adicionada à biblioteca!");
+        }
+
+        function openAdventureFromLibrary(id) {
+            const adventure = state.libraryAdventures.find(a => a.id === id);
+            if (!adventure) return;
+
+            state.elements = JSON.parse(JSON.stringify(adventure.elements)).map(el => ({
+                ...el,
+                data: {
+                    ...el.data,
+                    presentationView: el.data?.presentationView || { zoom: 1, x: 0, y: 0 }
+                }
+            }));
+            state.selectedElementId = null;
+            state.maximizedId = null;
+            document.getElementById('adventure-title').value = adventure.title;
+            renderEditor();
+            showView('editor');
+            setTimeout(() => state.elements.forEach(e => { if (e.type === 'map') renderElement(e.id); }), 300);
+            showNotification(`Abrindo: ${adventure.title}`);
+        }
+
+        function renderHomeGrid() {
+            const grid = document.getElementById('adventures-grid');
+            if(!grid) return;
+
+            if (state.libraryAdventures.length === 0) {
+                grid.innerHTML = `
+                    <div class="block-card p-16 flex flex-col items-center justify-center border-dashed border-2 rounded-[2.5rem] bg-background/50">
+                        <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-gold/20 to-transparent border border-gold/20 flex items-center justify-center mb-6">
+                            <i data-lucide="library-big" class="w-9 h-9 text-gold"></i>
+                        </div>
+                        <p class="font-display text-[12px] uppercase tracking-[0.35em] text-gold text-center">Sua jornada começa aqui</p>
+                        <p class="text-zinc-500 text-sm mt-3 text-center">Importe um JSON para adicionar uma nova crônica.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            grid.innerHTML = state.libraryAdventures.map(adv => {
+                const mapCount = adv.elements.filter(e => e.type === 'map').length;
+                const textCount = adv.elements.filter(e => e.type === 'text').length;
+                const mediaCount = adv.elements.filter(e => e.type === 'image' || e.type === 'audio').length;
+                return `
+                    <article class="group relative overflow-hidden rounded-[2rem] border border-gold/20 bg-card/70 backdrop-blur-xl shadow-2xl shadow-black/40 transition-all hover:border-gold/50 hover:shadow-[0_0_30px_-8px_hsl(var(--gold)/0.45)]">
+                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,hsl(var(--gold)/0.15),transparent_40%),radial-gradient(circle_at_90%_100%,hsl(var(--accent)/0.20),transparent_45%)] pointer-events-none"></div>
+                        <div class="relative p-6">
+                            <div class="flex items-center justify-between gap-3 mb-6">
+                                <h3 class="font-display text-xl text-gold leading-tight line-clamp-2">${adv.title}</h3>
+                                <span class="text-[10px] px-3 py-1 rounded-full border border-gold/20 bg-gold/10 text-gold uppercase tracking-wider">JSON</span>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 mb-6 text-center">
+                                <div class="rounded-xl bg-background/60 border border-white/5 p-3">
+                                    <p class="text-[10px] uppercase tracking-widest text-zinc-500">Mapas</p>
+                                    <p class="font-display text-lg text-zinc-200">${mapCount}</p>
+                                </div>
+                                <div class="rounded-xl bg-background/60 border border-white/5 p-3">
+                                    <p class="text-[10px] uppercase tracking-widest text-zinc-500">Texto</p>
+                                    <p class="font-display text-lg text-zinc-200">${textCount}</p>
+                                </div>
+                                <div class="rounded-xl bg-background/60 border border-white/5 p-3">
+                                    <p class="text-[10px] uppercase tracking-widest text-zinc-500">Mídia</p>
+                                    <p class="font-display text-lg text-zinc-200">${mediaCount}</p>
+                                </div>
+                            </div>
+                            <button onclick="openAdventureFromLibrary('${adv.id}')" class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gold text-black px-4 py-3 text-xs font-display tracking-widest uppercase hover:bg-gold-bright transition-all active:scale-[0.98]">
+                                <i data-lucide="play" class="w-4 h-4"></i>
+                                Abrir no Editor
+                            </button>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function showNotification(t) {
+            const n = document.getElementById('notification'); if(!n) return;
+            n.innerHTML = `<div class="flex items-center gap-3"><i data-lucide="sparkles" class="text-gold w-4 h-4 animate-glow-pulse"></i><span class="font-display font-bold text-xs uppercase tracking-widest text-gold">${t}</span></div>`;
+            n.style.display = 'block'; lucide.createIcons();
+            setTimeout(() => n.style.display = 'none', 3000);
+        }
+    </script>
 </body>
 </html>
