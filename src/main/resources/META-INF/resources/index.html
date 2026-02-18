@@ -209,7 +209,7 @@
         <section id="view-home" class="fade-in">
             <div class="relative h-[55vh] min-h-[450px] flex items-end overflow-hidden">
                 <!-- Imagem do Castelo ao Fundo -->
-                <div class="absolute inset-0 bg-[url('AOG.jpg')] bg-cover bg-[center_-15%] sm:bg-[center_40%] opacity-[0.80] scale-95"></div>
+                <div class="absolute inset-x-0 -top-[20%] bottom-0 sm:inset-0 bg-[url('AOG.jpg')] bg-cover bg-[center_40%] opacity-[0.80] scale-95"></div>
                 <div class="absolute inset-0 hero-overlay"></div>
                 
                 <div class="relative container mx-auto px-10 pb-12 space-y-4">
@@ -241,6 +241,14 @@
                 </div>
                 <div id="adventures-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                     <!-- Cards de aventuras injetados aqui -->
+                </div>
+
+                <div class="flex items-center gap-3 mt-16 mb-10">
+                    <i data-lucide="shield-check" class="w-5 h-5 text-gold"></i>
+                    <h2 class="font-display text-xl text-gold uppercase tracking-[0.2em]">Aventuras Oficiais</h2>
+                </div>
+                <div id="official-adventures-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Cards de aventuras oficiais injetados aqui -->
                 </div>
             </div>
         </section>
@@ -362,6 +370,7 @@
             view: 'home',
             elements: [], 
             libraryAdventures: [],
+            officialAdventures: [],
             selectedElementId: null,
             selectedColor: '#3b82f6',
             tokenIcon: null,
@@ -383,9 +392,11 @@
 
         const SQRT_3 = Math.sqrt(3);
 
-        window.onload = () => {
+        window.onload = async () => {
             initPalette();
             initGlobalEvents();
+            renderHomeGrid();
+            await loadOfficialAdventures();
             renderHomeGrid();
             lucide.createIcons();
         };
@@ -958,7 +969,70 @@
             showNotification(`Abrindo: ${adventure.title}`);
         }
 
+        function openOfficialAdventure(id) {
+            const adventure = state.officialAdventures.find(a => a.id === id);
+            if (!adventure) return;
+            state.elements = JSON.parse(JSON.stringify(adventure.elements)).map(el => ({
+                ...el,
+                data: {
+                    ...el.data,
+                    presentationView: el.data?.presentationView || { zoom: 1, x: 0, y: 0 }
+                }
+            }));
+            state.selectedElementId = null;
+            state.maximizedId = null;
+            document.getElementById('adventure-title').value = adventure.title;
+            renderEditor();
+            showView('editor');
+            setTimeout(() => state.elements.forEach(e => { if (e.type === 'map') renderElement(e.id); }), 300);
+            showNotification(`Abrindo oficial: ${adventure.title}`);
+        }
+
+        async function loadOfficialAdventures() {
+            state.officialAdventures = [];
+            let sequence = 1;
+
+            while (true) {
+                const padded = String(sequence).padStart(2, '0');
+                const fileName = `AOG${padded}.json`;
+                let response;
+                try {
+                    response = await fetch(fileName, { cache: 'no-store' });
+                } catch {
+                    break;
+                }
+
+                if (!response.ok) break;
+
+                try {
+                    const data = await response.json();
+                    if (data && Array.isArray(data.elements)) {
+                        state.officialAdventures.push({
+                            id: `official-${fileName}`,
+                            title: data.title || `Aventura Oficial ${padded}`,
+                            elements: data.elements.map(el => ({
+                                ...el,
+                                data: {
+                                    ...el.data,
+                                    presentationView: el.data?.presentationView || { zoom: 1, x: 0, y: 0 }
+                                }
+                            }))
+                        });
+                    }
+                } catch {
+                    // Se existir mas estiver inválido, tenta o próximo arquivo.
+                }
+
+                sequence += 1;
+            }
+        }
+
         function renderHomeGrid() {
+            renderLibraryGrid();
+            renderOfficialAdventuresGrid();
+        }
+
+        function renderLibraryGrid() {
             const grid = document.getElementById('adventures-grid');
             if(!grid) return;
 
@@ -1003,6 +1077,61 @@
                                 </div>
                             </div>
                             <button onclick="openAdventureFromLibrary('${adv.id}')" class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gold text-black px-4 py-3 text-xs font-display tracking-widest uppercase hover:bg-gold-bright transition-all active:scale-[0.98]">
+                                <i data-lucide="play" class="w-4 h-4"></i>
+                                Abrir no Editor
+                            </button>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function renderOfficialAdventuresGrid() {
+            const grid = document.getElementById('official-adventures-grid');
+            if (!grid) return;
+
+            if (state.officialAdventures.length === 0) {
+                grid.innerHTML = `
+                    <div class="block-card p-12 flex flex-col items-center justify-center border-dashed border-2 rounded-[2.5rem] bg-background/40">
+                        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gold/20 to-transparent border border-gold/20 flex items-center justify-center mb-5">
+                            <i data-lucide="shield" class="w-7 h-7 text-gold"></i>
+                        </div>
+                        <p class="font-display text-[11px] uppercase tracking-[0.28em] text-gold text-center">Nenhuma aventura oficial encontrada</p>
+                        <p class="text-zinc-500 text-sm mt-3 text-center">Adicione arquivos AOG01.json, AOG02.json, ... para listar aqui.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            grid.innerHTML = state.officialAdventures.map(adv => {
+                const mapCount = adv.elements.filter(e => e.type === 'map').length;
+                const textCount = adv.elements.filter(e => e.type === 'text').length;
+                const mediaCount = adv.elements.filter(e => e.type === 'image' || e.type === 'audio').length;
+                return `
+                    <article class="group relative overflow-hidden rounded-[2rem] border border-gold/30 bg-card/70 backdrop-blur-xl shadow-2xl shadow-black/40 transition-all hover:border-gold/60 hover:shadow-[0_0_30px_-8px_hsl(var(--gold)/0.5)]">
+                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,hsl(var(--gold)/0.18),transparent_40%),radial-gradient(circle_at_90%_100%,hsl(var(--accent)/0.18),transparent_45%)] pointer-events-none"></div>
+                        <div class="relative p-6">
+                            <div class="flex items-center justify-between gap-3 mb-6">
+                                <h3 class="font-display text-xl text-gold leading-tight line-clamp-2">${adv.title}</h3>
+                                <span class="text-[10px] px-3 py-1 rounded-full border border-gold/25 bg-gold/15 text-gold uppercase tracking-wider">OFICIAL</span>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 mb-6 text-center">
+                                <div class="rounded-xl bg-background/60 border border-white/5 p-3">
+                                    <p class="text-[10px] uppercase tracking-widest text-zinc-500">Mapas</p>
+                                    <p class="font-display text-lg text-zinc-200">${mapCount}</p>
+                                </div>
+                                <div class="rounded-xl bg-background/60 border border-white/5 p-3">
+                                    <p class="text-[10px] uppercase tracking-widest text-zinc-500">Texto</p>
+                                    <p class="font-display text-lg text-zinc-200">${textCount}</p>
+                                </div>
+                                <div class="rounded-xl bg-background/60 border border-white/5 p-3">
+                                    <p class="text-[10px] uppercase tracking-widest text-zinc-500">Mídia</p>
+                                    <p class="font-display text-lg text-zinc-200">${mediaCount}</p>
+                                </div>
+                            </div>
+                            <button onclick="openOfficialAdventure('${adv.id}')" class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gold text-black px-4 py-3 text-xs font-display tracking-widest uppercase hover:bg-gold-bright transition-all active:scale-[0.98]">
                                 <i data-lucide="play" class="w-4 h-4"></i>
                                 Abrir no Editor
                             </button>
